@@ -1,930 +1,737 @@
 <!DOCTYPE html>
-
-
-
-
-
 <html lang="zh-CN">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>随机音符播放器 v2.8.5</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.27/Tone.min.js"></script>
-    <script src="https://surikov.github.io/webaudiofont/npm/dist/WebAudioFontPlayer.js"></script>
-    <script src="https://surikov.github.io/webaudiofontdata/sound/0330_Aspirin_sf2_file.js"></script>
-    <script src="https://surikov.github.io/webaudiofontdata/sound/0000_JCLive_sf2_file.js"></script>
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.min.css">
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>复活计划乐队</title>
     <style>
-        body {
-            font-family: 'Noto Sans', 'Roboto', 'Arial';
-            padding: 20px;
-            text-align: center;
-            max-width: 600px;
-            margin: 0 auto;
-            background-color: #E2D2BA; /* 敦煌砂岩色 */
-            color: #4A3728; /* 深褐色 */
-        }
-        h1, h3, h4 { 
-            color: #8C4B3C; /* 敦煌红 */
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-        }
-        .control-group {
-            margin-bottom: 4px;
-            text-align: left;
-            background-color: #D9C7B8; /* 浅土黄色 */
-            padding: 15px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 4px rgba(74,55,40,0.1);
-            border: 1px solid #B88A6F; /* 赭石色边框 */
-        }
-        .control-group-inline {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-            width: 100%;
-        }
-        
-        .control-group-inline label {
-            min-width: 80px;
-        }
-        
-        .control-group-inline input[type="range"] {
-            flex: 1;
-        }
-        .control-group-inline input[type="text"],
-        .control-group-inline select {
-            flex: 1;
-        }
-        input, select {
-            padding: 8px;
+        /* 全局样式 */
+        * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
-            background-color: #F0E6D9; /* 米黄色 */
-            color: #4A3728;
-            border: 1px solid #B88A6F;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-        }
-        input:focus, select:focus {
-            outline: none;
-            box-shadow: 0 0 0 0px #8C4B3C;
-        }
-        input[type="range"] {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 6px;
-            background: #8C4B3C;
-            outline: none;
-            opacity: 1;
-            transition: opacity .2s;
-        }
-        input[type="range"]:hover {
-            opacity: 1;
-        }
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            background: #F0E6D9;
-            cursor: pointer;
-            border: 2px solid #8C4B3C;
-            border-radius: 50%;
-        }
-        input[type="range"]::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            background: #F0E6D9;
-            cursor: pointer;
-            border: 2px solid #8C4B3C;
-            border-radius: 50%;
-        }
-        button {
-            padding: 10px 20px;
-            background-color: #8C4B3C; /* 敦煌红 */
-            color: #F0E6D9;
-            border: none;
-            cursor: pointer;
-            margin: 5px;
-            border-radius: 4px;
-            box-shadow: 0 2px 4px rgba(74,55,40,0.2);
-            transition: all 0.3s ease;
-        }
-        button:hover {
-            background-color: #6D3A2E;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(74,55,40,0.3);
-        }
-        button:disabled { 
-            background-color: #B88A6F; 
-            box-shadow: none;
-            color: #E2D2BA;
-        }
-        #current-note-display {
-            flex: 1;
-            font-size: 27px;
-            color: #8C4B3C;
-            text-align: center;
-        }
-        .slider-container {
-            width: 100%;
-        }
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 40px;
-            height: 24px;
-        }
-        .switch input { 
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        .switch-container {
-            display: flex;
-            align-items: center;
-        }
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #B88A6F;
-            transition: .4s;
-            border-radius: 24px;
-        }
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: #F0E6D9;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        .control-flex {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            font-family: 'Noto Sans', 'Roboto', 'Arial';
         }
         
-        .control-left {
+        body {
+            background-color: #f5f1e8;
+            color: #5a4a3a;
+            min-height: 100vh;
+            transition: background-color 0.3s;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* 主界面样式 */
+        #main-view {
+            display: block;
+        }
+        
+        .main-title {
+            text-align: center;
+            margin: 30px 0 20px;
+            font-size: 2.5rem;
+            color: #8c6a4d;
+            letter-spacing: 2px;
+        }
+        
+        .categories-list {
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
+            gap: 15px;
+            padding: 10px;
         }
-        input:checked + .slider { background-color: #8C4B3C; }
-        input:checked + .slider:before { 
-            transform: translateX(16px);
-        }
-        #play-count-value, #answer-count-value {
-            display: inline-block;
-            width: 10px;
-            text-align: center;
-        }
-        #note-selection {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #D9C7B8;
-            padding: 4px;
-            border: 1px solid #8C4B3C;
-            box-shadow: 0 0 20px rgba(74,55,40,0.2);
-            z-index: 1000;
-            width: 90%;
-            max-width: 600px;
-            max-height: 90%;
-            overflow-y: auto;
+        
+        .category-card {
+            background-color: #e8dfd3;
             border-radius: 8px;
-            font-size: 0.9em;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        #overlay {
+        
+        .category-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .category-card h2 {
+            margin-bottom: 10px;
+            color: #6b4f3b;
+        }
+        
+        /* 分类界面样式 */
+        #category-view {
+            display: none;
+        }
+        
+        .back-button {
+            background-color: #d4c8b8;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            cursor: pointer;
+            font-size: 1rem;
+            color: #5a4a3a;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        #categoryTitle {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.8rem;
+            color: #8c6a4d;
+        }
+        
+        .songs-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 0 20px;
+        }
+        
+        .song-item {
+            background-color: #e8dfd3;
+            padding: 15px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+        }
+        
+        .song-item:hover {
+            background-color: #d9cdbc;
+        }
+        
+        .song-number {
+            font-weight: bold;
+            margin-right: 15px;
+            color: #8c6a4d;
+            min-width: 35px;
+        }
+        
+        /* 乐谱查看器样式 */
+        #viewer-view {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(226,210,186,0.7);
-            z-index: 999;
+            background-color: rgba(0,0,0,0.95);
+            z-index: 100;
+            flex-direction: column;
         }
-        #note-table {
-            border-collapse: collapse;
+        
+        .viewer-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            position: relative;
+            overflow-y: auto;
+            padding: 0;
+        }
+        
+        .sheet-container {
+            position: relative;
+            max-width: 1000px;
+            margin: 0;
+        }
+        
+        .sheet-image {
+            display: block;
+            transition: all 0.3s ease;
             width: 100%;
+            height: auto;
+            max-width: 100%;
         }
-        #note-table td, #note-table th {
-            height: 40px;
-            border: 1px solid #B88A6F;
-            padding: 0px;
-            text-align: center;
-        }
-        #note-table tr:nth-child(even) {
-            background-color: #E2D2BA;
-        }
-        .note-checkbox {
-            margin: none;
-            transform: scale(0.9);
-        }
-        .alert-panel {
-            display: none;
+        
+        .page-indicator-container {
             position: fixed;
-            top: 50%;
+            bottom: 20px;
             left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #D9C7B8;
-            padding: 20px;
-            border: 1px solid #8C4B3C;
-            box-shadow: 0 0 20px rgba(74,55,40,0.2);
-            z-index: 2001;
-            max-width: 90%;
-            border-radius: 8px;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            z-index: 110;
+            background-color: rgba(0,0,0,0.5);
+            border-radius: 20px;
+            padding: 5px 10px;
+        }
+        
+        .page-nav {
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            opacity: 0.7;
+            padding: 0 10px;
+            user-select: none;
+        }
+        
+        .page-nav:hover {
+            opacity: 1;
+        }
+        
+        .page-indicator {
+            color: white;
             text-align: center;
-            min-width: 270px;
+            padding: 0 15px;
+            font-size: 0.9rem;
         }
         
-        .alert-panel p {
-            margin-bottom: 15px;
-            color: #4A3728;
-        }
-        
-        .alert-panel button {
-            padding: 8px 16px;
-            background-color: #8C4B3C;
-            color: #F0E6D9;
+        .close-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: rgba(0,0,0,0.5);
             border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 110;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        
+        .close-button:hover {
+            opacity: 1;
+            background-color: rgba(0,0,0,0.7);
+        }
+        
+        /* 版本切换按钮 */
+        .version-buttons {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            gap: 5px;
+            z-index: 110;
+        }
+        
+        .version-button {
+            background-color: rgba(0,0,0,0.5);
+            border: none;
+            color: white;
+            padding: 5px 10px;
             border-radius: 4px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        
+        .version-button:hover {
+            opacity: 1;
+            background-color: rgba(0,0,0,0.7);
+        }
+        
+        /* 优先显示选项 */
+        .version-preference {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .version-preference label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
             cursor: pointer;
         }
         
-        .alert-panel button:hover {
-            background-color: #6D3A2E;
-        }
-        #note-selection, #alert-panel {
-            transition: all 0.3s ease-in-out;
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0.9);
-            pointer-events: none;
-        }
-        
-        #note-selection.show, #alert-panel.show {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
-            pointer-events: auto;
-        }
-        
-        #overlay {
-            transition: opacity 0.3s ease-in-out;
-            opacity: 0;
-            pointer-events: none;
-        }
-        
-        #overlay.show {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        body {
-            user-select: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-        }
-        #readonly-note-table {
-            border-collapse: collapse;
-            width: 100%;
-            table-layout: auto;
-        }
-        
-        #readonly-note-table td, #readonly-note-table th {
-            border: 1px solid #B88A6F;
-            padding: 0px;
-            text-align: center;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        
-        #readonly-note-table tr:nth-child(even) {
-            background-color: #E2D2BA;
-        }
-        /* 移除最外层边框 */
-        #readonly-note-table tr:first-child th {
-            border-top: none;
-        }
-        
-        #readonly-note-table tr:last-child td {
-            border-bottom: none;
-        }
-        
-        #readonly-note-table tr td:first-child,
-        #readonly-note-table tr th:first-child {
-            border-left: none;
-        }
-        
-        #readonly-note-table tr td:last-child,
-        #readonly-note-table tr th:last-child {
-            border-right: none;
-        }
-        .note-selected {
-            background-color: #8C4B3C;
-            color: #F0E6D9;
-        }
-        
-        #selectButton, #eraserButton, #clearAllButton {
-            padding: 5px 10px;
-            margin-bottom: 10px;
-        }
-        
-        #selectButton.active, #eraserButton.active, #clearAllButton.active {
-            background-color: #6D3A2E;
-        }
-        
-        .note-highlighted {
-            background-color: #F0E6D9;
-            color: #8C4B3C;
-            font-weight: bold;
-        }
-        @media screen and (max-width: 600px) {
-            body {
-                padding: 10px;
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 2rem;
+                margin: 20px 0 30px;
             }
             
-            #readonly-note-table {
-                font-size: 0.8em;
-            }
-        }
-        
-        @media screen and (max-width: 400px) {
-            #readonly-note-table {
-                font-size: 0.7em;
+            .category-card {
+                padding: 20px;
             }
             
-            #readonly-note-table td, #readonly-note-table th {
-                padding: 1px;
+            #categoryTitle {
+                font-size: 1.5rem;
+                margin-bottom: 25px;
             }
-        }
-        
-        #alert-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            z-index: 2000;  /* 增加 z-index */
-            opacity: 0;
-            transition: opacity 0.3s ease-in-out;
-        }
-        
-        #alert-overlay.show {
-            opacity: 1;
-        }
-        .note-temp-selected {
-            background-color: rgba(140, 75, 60, 0.5);  /* 半透明的选中颜色 */
-        }
-        
-        .note-temp-erased {
-            background-color: rgba(226, 210, 186, 0.5);  /* 半透明的擦除颜色 */
-        }
-        #readonly-note-table th:first-child,
-        #readonly-note-table td:first-child,
-        #note-table th:first-child,
-        #note-table td:first-child {
-            font-weight: bold;
+            
+            .close-button {
+                width: 35px;
+                height: 35px;
+                font-size: 1.2rem;
+            }
+            
+            .version-buttons {
+                top: 70px;
+                left: 10px;
+                flex-wrap: wrap;
+                max-width: 80%;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>随机音符播放器 v2.8.5</h1>
-    <h4>复活计划乐队</h4>
-
-    <div class="control-group" id="readonly-note-container" style="padding: 0px">
-        <div style="overflow-x: auto;">
-            <table id="readonly-note-table"></table>
+    <!-- 主界面 -->
+    <div id="main-view" class="container">
+        <h1 class="main-title">复活计划乐队</h1>
+        
+        <div class="version-preference" id="versionPreference">
+            <!-- 优先显示选项将通过JS动态加载 -->
         </div>
-    </div>
-
-    <div class="control-group">
-        <div class="control-flex">
-            <div class="control-left">
-                <div class="slider-container">
-                    <div class="control-group-inline">
-                        <label for="play-count">纯音次数：</label>
-                        <input type="range" id="play-count" min="1" max="7" value="1">
-                        <span id="play-count-value">1</span>
-                    </div>
-                    
-                    <div class="control-group-inline">
-                        <label for="answer-count">答案次数：</label>
-                        <input type="range" id="answer-count" min="1" max="7" value="1">
-                        <span id="answer-count-value">1</span>
-                    </div>
-                </div>
-                <div class="switch-container">
-                    <span>语音播报：</span>
-                    <label class="switch">
-                        <input type="checkbox" id="speech-toggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-            </div>
-            <div id="current-note-display"></div>
+        
+        <div class="categories-list" id="categoriesContainer">
+            <!-- 分类将通过JS动态加载 -->
         </div>
     </div>
     
-    <div class="control-group">
-        <div class="control-group-inline" style="margin-bottom: 0px">
-            <label for="instrument">音色：</label>
-                <select id="instrument">
-                    <option value="bass" selected>电贝司</option>
-                    <option value="piano">钢琴</option>
-                    <option value="sawtooth">锯齿波</option>
-                    <option value="square">方波</option>
-                    <option value="triangle">三角波</option>
-                </select>
+    <!-- 分类界面 -->
+    <div id="category-view" class="container">
+        <button class="back-button" id="backButton">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            返回
+        </button>
+        <h2 id="categoryTitle"></h2>
+        <div class="songs-list" id="songsContainer">
+            <!-- 歌曲列表将通过JS动态加载 -->
         </div>
     </div>
-
-    <div class="control-group" style="text-align: center;">
-        <div class="switch-container" style="display: inline-flex; align-items: center;">
-            <span>不播 # 音：</span>
-            <label class="switch">
-                <input type="checkbox" id="exclude-sharp">
-                <span class="slider"></span>
-            </label>
+    
+    <!-- 乐谱查看器 -->
+    <div id="viewer-view">
+        <div class="version-buttons" id="versionButtons">
+            <!-- 版本切换按钮将通过JS动态加载 -->
         </div>
-        <div style="margin-top: 10px;">
-            <button id="start-btn">开始</button>
-            <button id="stop-btn" disabled>停止</button>
+        <button class="close-button" id="close-viewer">×</button>
+        <div class="viewer-content" id="viewerContent">
+            <div class="sheet-container">
+                <img id="sheet-image" class="sheet-image" src="" alt="乐谱">
+            </div>
+        </div>
+        <div class="page-indicator-container">
+            <div class="page-nav" id="prev-page">‹</div>
+            <div class="page-indicator" id="page-indicator">1 / 1</div>
+            <div class="page-nav" id="next-page">›</div>
         </div>
     </div>
-
-    <div id="overlay"></div>
-    <div id="note-selection">
-        <h3>自定义练习音符</h3>
-        <div class="button-group">
-            <button id="selectButton" class="active">选择</button>
-            <button id="eraserButton">橡皮擦</button>
-            <button id="clearAllButton">清除全部</button>
-        </div>
-        <table id="note-table"></table>
-        <button id="confirm-selection" style="margin-top: 5px;">确定</button>
-    </div>
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
 
     <script>
-        const notes = ['A0', 'A#0', 'B0', 'C1', 'C#1', 'D1', 'D#1', 'E1', 'F1', 'F#1', 'G1', 'G#1', 'A1', 'A#1', 'B1', 'C2', 'C#2', 'D2', 'D#2', 'E2', 'F2', 'F#2', 'G2', 'G#2', 'A2', 'A#2', 'B2', 'C3', 'C#3', 'D3', 'D#3', 'E3', 'F3', 'F#3', 'G3', 'G#3', 'A3', 'A#3', 'B3', 'C4', 'C#4', 'D4', 'D#4', 'E4', 'F4', 'F#4', 'G4', 'G#4', 'A4', 'A#4', 'B4', 'C5', 'C#5', 'D5', 'D#5', 'E5', 'F5', 'F#5', 'G5', 'G#5', 'A5', 'A#5', 'B5', 'C6', 'C#6', 'D6', 'D#6', 'E6', 'F6', 'F#6', 'G6', 'G#6', 'A6', 'A#6', 'B6', 'C7', 'C#7', 'D7', 'D#7', 'E7', 'F7', 'F#7', 'G7', 'G#7', 'A7', 'A#7', 'B7', 'C8'];
-        let instrument = 'bass', playCount = 1, answerCount = 1;
-        let synth = null;
-        let currentNote = null;
-        let isPlaying = false;
-        let excludeSharp = false;
-        let supportSpeech = 'speechSynthesis' in window;
-        let speechEnabled = supportSpeech;
-        let selectedNotes = new Set(notes);
-        let mode = 'select';
-        
-        const speakInterval = 2000;
-        const playInterval = 1500;
-
-        var audioContext = new AudioContext();
-        var player = new WebAudioFontPlayer();
-        player.loader.decodeAfterLoading(audioContext, '_tone_0330_Aspirin_sf2_file');
-
-        $(function() {
-            if (supportSpeech) {
-                // 预先初始化语音合成系统
-                speechSynthesis.speak(new SpeechSynthesisUtterance(''));
-            }
-            setupBassInstrument();
-            
-            createReadonlyNoteTable();
-
-            $("#play-count").on("input", function() {
-                playCount = this.value;
-                $("#play-count-value").text(this.value);
-            });
-            
-            $("#answer-count").on("input", function() {
-                answerCount = this.value;
-                $("#answer-count-value").text(this.value);
-            });
-
-            $("#instrument").on("change", function() {
-                instrument = this.value;
-                if (instrument === 'bass') {
-                    setupBassInstrument();
-                } else if (instrument === 'piano') {
-                    setupPianoInstrument();
-                } else {
-                    synth = new Tone.Synth({
-                        oscillator: { type: instrument }
-                    }).toDestination();
-                }
-            });
-
-            $("#exclude-sharp").on("change", function() {
-                excludeSharp = this.checked;
-            });
-
-            $("#start-btn").on("click", startPlaying);
-            $("#stop-btn").on("click", stopPlaying);
-
-            $("#confirm-selection").on("click", hideNoteSelection);
-
-            $("#speech-toggle").prop("checked", speechEnabled);
-            $("#speech-toggle").on("change", function() {
-                if (!supportSpeech && this.checked) {
-                    showAlert("检测到该浏览器不支持语音播报，\n请使用 Chrome 等浏览器。");
-                    $(this).prop("checked", false);
-                } else {
-                    speechEnabled = this.checked;
-                }
-            });
-            $("#note-selection, #alert-panel").on("transitionend", function(e) {
-                if (e.originalEvent.propertyName === "opacity" && !$(this).hasClass("show")) {
-                    $(this).css("display", "none");
-                }
-            });
-            
-            $("#overlay").on("transitionend", function(e) {
-                if (e.originalEvent.propertyName === "opacity" && !$(this).hasClass("show")) {
-                    $(this).css("display", "none");
-                }
-            });
-            
-            $("#readonly-note-container").on("click", showNoteSelection);
-
-            $('#alert-close').on('click', hideAlert);
-
-            createNoteSelection();
-        });
-
-        function setupBassInstrument() {
-            // 确保 WebAudioFont 已加载
-            player.loader.decodeAfterLoading(audioContext, '_tone_0330_Aspirin_sf2_file');
-        }
-        
-        function setupPianoInstrument() {
-            player.loader.decodeAfterLoading(audioContext, '_tone_0000_JCLive_sf2_file');
-        }
-
-        function createNoteSelection() {
-            const noteTable = $("#note-table");
-            noteTable.empty();
-            const octaves = ['0', '1', '2', '3', '4', '5', '6', '7', '8'];
-            const baseNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-        
-            let headerRow = $('<tr>');
-            headerRow.append($('<th>'));
-            baseNotes.forEach(note => {
-                headerRow.append($('<th>').text(note));
-            });
-            noteTable.append(headerRow);
-        
-            octaves.forEach(octave => {
-                let row = $('<tr>');
-                row.append($('<td>').text(octave));
-                baseNotes.forEach(note => {
-                    let fullNote = note + octave;
-                    if (notes.includes(fullNote)) {
-                        let cell = $('<td>').text(fullNote);
-                        if (selectedNotes.has(fullNote)) {
-                            cell.addClass('note-selected');
+        // 乐谱数据
+        const songsData = {
+            "categories": [
+                {
+                    "name": "进堂咏",
+                    "songs": [
+                        
+                    ]
+                },
+                {
+                    "name": "垂怜曲",
+                    "songs": [
+                        
+                    ]
+                },
+                {
+                    "name": "光荣颂",
+                    "songs": [
+                        
+                    ]
+                },
+                {
+                    "name": "福音前欢呼",
+                    "songs": [
+                        
+                    ]
+                },
+                {
+                    "name": "奉献咏",
+                    "songs": [
+                        
+                    ]
+                },
+                {
+                    "name": "天主经",
+                    "songs": [
+                        
+                    ]
+                },
+                {
+                    "name": "领主咏",
+                    "songs": [
+                        {
+                            "id": "009",
+                            "title": "上主是我的光明，我的救援",
+                            "pages": 2,
+                            "filename": "领主咏_009_上主是我的光明，我的救援",
+                            "versions": []
                         }
-                        row.append(cell);
-                    } else {
-                        row.append($('<td>'));
-                    }
-                });
-                noteTable.append(row);
-            });
-        
-            setupNoteSelection();
+                    ]
+                },
+                {
+                    "name": "礼成咏",
+                    "songs": [
+                        
+                    ]
+                },
+                {
+                    "name": "圣诞",
+                    "songs": [
+                        
+                    ]
+                }
+            ]
+        };
+
+        // 当前状态
+        let currentState = {
+            currentCategory: null,
+            currentSong: null,
+            currentPage: 1,
+            totalPages: 1,
+            currentVersion: "原谱",
+            preferredVersion: "原谱",
+            availableVersions: []
+        };
+
+        // DOM元素
+        const mainView = document.getElementById('main-view');
+        const categoryView = document.getElementById('category-view');
+        const viewerView = document.getElementById('viewer-view');
+        const viewerContent = document.getElementById('viewerContent');
+        const categoriesContainer = document.getElementById('categoriesContainer');
+        const categoryTitle = document.getElementById('categoryTitle');
+        const songsContainer = document.getElementById('songsContainer');
+        const backButton = document.getElementById('backButton');
+        const closeViewerButton = document.getElementById('close-viewer');
+        const sheetImage = document.getElementById('sheet-image');
+        const prevPageButton = document.getElementById('prev-page');
+        const nextPageButton = document.getElementById('next-page');
+        const pageIndicator = document.getElementById('page-indicator');
+        const versionButtonsContainer = document.getElementById('versionButtons');
+        const versionPreferenceContainer = document.getElementById('versionPreference');
+
+        // 初始化应用
+        function initApp() {
+            // 初始添加一个历史记录
+            history.replaceState(null, null);
+            
+            renderCategories();
+            renderVersionPreference();
+            setupEventListeners();
         }
-        
-        function setupNoteSelection() {
-            let isSelecting = false;
-            let startCell = null;
-            let tempSelectedCells = new Set();
-            $('#selectButton').addClass('active');
-            $('#eraserButton').removeClass('active');
-        
-            $('#selectButton').on('click', function() {
-                mode = 'select';
-                $(this).addClass('active');
-                $('#eraserButton').removeClass('active');
+
+        // 渲染分类列表
+        function renderCategories() {
+            categoriesContainer.innerHTML = '';
+            songsData.categories.forEach(category => {
+                const categoryElement = document.createElement('div');
+                categoryElement.className = 'category-card';
+                categoryElement.innerHTML = `
+                    <h2>${category.name}</h2>
+                    <p>${category.songs.length}首歌曲</p>
+                `;
+                categoryElement.addEventListener('click', () => showCategory(category.name));
+                categoriesContainer.appendChild(categoryElement);
             });
-        
-            $('#eraserButton').on('click', function() {
-                mode = 'eraser';
-                $(this).addClass('active');
-                $('#selectButton').removeClass('active');
+        }
+
+        // 渲染版本偏好选项
+        function renderVersionPreference() {
+            // 收集所有可用的版本
+            const allVersions = new Set();
+            songsData.categories.forEach(category => {
+                category.songs.forEach(song => {
+                    song.versions.forEach(version => {
+                        allVersions.add(version);
+                    });
+                });
             });
             
-            $('#clearAllButton').on('click', function() {
-                selectedNotes.clear();
-                $('#note-table td').removeClass('note-selected');
-                updateNoteSelection();
-                stopPlaying(); // 添加这行来停止播放
-            });
-        
-            $('#note-table').on('mousedown touchstart', 'td:not(:first-child)', function(e) {
-                e.preventDefault();
-                isSelecting = true;
-                startCell = this;
-                tempSelectedCells.clear();
-                updateTempSelection(this);
-            });
-        
-            $(document).on('mousemove touchmove', function(e) {
-                if (!isSelecting) return;
+            versionPreferenceContainer.innerHTML = '';
+            
+            if (allVersions.size > 0) {
+                const label = document.createElement('span');
+                label.textContent = '优先显示：';
+                versionPreferenceContainer.appendChild(label);
                 
-                let target = document.elementFromPoint(
-                    e.type.includes('touch') ? e.originalEvent.touches[0].clientX : e.clientX,
-                    e.type.includes('touch') ? e.originalEvent.touches[0].clientY : e.clientY
-                );
+                // 添加原谱选项
+                const originalLabel = document.createElement('label');
+                originalLabel.innerHTML = `
+                    <input type="radio" name="versionPreference" value="原谱" ${currentState.preferredVersion === '原谱' ? 'checked' : ''}>
+                    原谱
+                `;
+                originalLabel.addEventListener('change', () => {
+                    if (originalLabel.querySelector('input').checked) {
+                        currentState.preferredVersion = '原谱';
+                    }
+                });
+                versionPreferenceContainer.appendChild(originalLabel);
                 
-                if (target && target.tagName === 'TD' && target.cellIndex !== 0 && target.parentNode.parentNode === $('#note-table')[0]) {
-                    updateTempSelection(target);
-                }
-            });
-        
-            $(document).on('mouseup touchend', function() {
-                if (isSelecting) {
-                    applyFinalSelection();
-                }
-                isSelecting = false;
-                startCell = null;
-                clearTempSelection();
-            });
-        
-            function updateTempSelection(endCell) {
-                if (!startCell || !endCell) return;
-        
-                clearTempSelection();
-        
-                let cells = $('#note-table td:not(:first-child)').get();
-                let startIndex = cells.indexOf(startCell);
-                let endIndex = cells.indexOf(endCell);
-        
-                let minIndex = Math.min(startIndex, endIndex);
-                let maxIndex = Math.max(startIndex, endIndex);
-        
-                cells.slice(minIndex, maxIndex + 1).forEach(cell => {
-                    if (cell.textContent) {
-                        tempSelectedCells.add(cell);
-                        if (mode === 'select') {
-                            $(cell).addClass('note-temp-selected');
-                        } else if (mode === 'eraser') {
-                            $(cell).addClass('note-temp-erased');
+                // 添加其他版本选项
+                Array.from(allVersions).forEach(version => {
+                    const versionLabel = document.createElement('label');
+                    versionLabel.innerHTML = `
+                        <input type="radio" name="versionPreference" value="${version}" ${currentState.preferredVersion === version ? 'checked' : ''}>
+                        ${version}
+                    `;
+                    versionLabel.addEventListener('change', () => {
+                        if (versionLabel.querySelector('input').checked) {
+                            currentState.preferredVersion = version;
                         }
-                    }
+                    });
+                    versionPreferenceContainer.appendChild(versionLabel);
                 });
             }
-        
-            function clearTempSelection() {
-                $('#note-table td').removeClass('note-temp-selected note-temp-erased');
-                tempSelectedCells.clear();
-            }
-        
-            function applyFinalSelection() {
-                tempSelectedCells.forEach(cell => {
-                    if (mode === 'select') {
-                        $(cell).removeClass('note-temp-selected').addClass('note-selected');
-                        selectedNotes.add(cell.textContent);
-                    } else if (mode === 'eraser') {
-                        $(cell).removeClass('note-temp-erased note-selected');
-                        selectedNotes.delete(cell.textContent);
-                    }
-                });
-                clearTempSelection();
-                updateNoteSelection();
-                
-                // 检查是否所有音符都被擦除
-                if (selectedNotes.size === 0) {
-                    stopPlaying(); // 如果所有音符都被擦除，停止播放
-                }
-            }
-            // 页面加载完成后自动显示面板
-            showNoteSelection();
-            
-            // 清空已选音符
-            selectedNotes.clear();
-            updateNoteSelection();
         }
 
-        function showNoteSelection() {
-            $("#overlay").css("display", "block");
-            $("#note-selection").css("display", "block");
-            setTimeout(() => {
-                $("#overlay").addClass("show");
-                $("#note-selection").addClass("show");
-            }, 10);
-        
-            // 添加点击事件监听器到 overlay
-            $("#overlay").on("click", hideNoteSelection);
-        
-            // 默认选中"选择"按钮
-            $('#selectButton').addClass('active');
-            $('#eraserButton').removeClass('active');
-            mode = 'select';
-        }
-        
-        function hideNoteSelection() {
-            if(selectedNotes.size === 0) {
-                showAlert("请至少选择一个音符");
-                return;
-            }
-            
-            $("#overlay").removeClass("show");
-            $("#note-selection").removeClass("show");
-            setTimeout(() => {
-                $("#overlay").css("display", "none");
-                $("#note-selection").css("display", "none");
-            }, 300);
-        
-            // 移除点击事件监听器
-            $("#overlay").off("click", hideNoteSelection);
-            
-            updateReadonlyNoteTable();
-        }
-        
-        function updateNoteSelection() {
-          $('#note-table td').removeClass('note-selected');
-          selectedNotes.forEach(note => {
-            $(`#note-table td:contains('${note}')`).addClass('note-selected');
-          });
+        // 显示分类下的歌曲
+        function showCategory(categoryName) {
+            const category = songsData.categories.find(c => c.name === categoryName);
+            if (!category) return;
+
+            currentState.currentCategory = categoryName;
+            categoryTitle.textContent = categoryName;
+            songsContainer.innerHTML = '';
+
+            category.songs.forEach((song) => {
+                const songElement = document.createElement('div');
+                songElement.className = 'song-item';
+                // 直接使用歌曲的ID作为序号（已经是三位数）
+                songElement.innerHTML = `
+                    <div class="song-number">${song.id}</div>
+                    <div class="song-title">${song.title}</div>
+                `;
+                songElement.addEventListener('click', () => showSong(categoryName, song));
+                songsContainer.appendChild(songElement);
+            });
+
+            mainView.style.display = 'none';
+            categoryView.style.display = 'block';
         }
 
-        function playRepeatNote() {
-            updateCurrentNoteDisplay("");
-            highlightCurrentNote(null);
-            if (isPlaying) {
-                for (let i = 0; i < playCount; i++) {
-                    setTimeout(playOneNote, i * playInterval);
-                }
-                setTimeout(() => speakNoteName(currentNote), playCount * playInterval);
-            }
-        }
-        
-        function playOneNote() {
-            if (audioContext.state === 'suspended') {
-                audioContext.resume();
-            }
+        // 显示乐谱
+        function showSong(categoryName, song) {
+            currentState.currentSong = song;
+            currentState.currentPage = 1;
+            currentState.totalPages = song.pages;
+            currentState.availableVersions = ['原谱', ...song.versions];
             
-            var pitch = Tone.Frequency(currentNote).toMidi();
-            if (instrument === 'bass') {
-                player.queueWaveTable(audioContext, audioContext.destination, _tone_0330_Aspirin_sf2_file, 0, pitch, 0.7);
-            } else if (instrument === 'piano') {
-                player.queueWaveTable(audioContext, audioContext.destination, _tone_0000_JCLive_sf2_file, 0, pitch, 0.7);
+            // 根据偏好设置当前版本
+            if (song.versions.includes(currentState.preferredVersion)) {
+                currentState.currentVersion = currentState.preferredVersion;
             } else {
-                synth.triggerAttackRelease(currentNote, '0.7s');
+                currentState.currentVersion = '原谱';
+            }
+
+            loadImage(currentState.currentPage);
+            updatePageIndicator();
+            renderVersionButtons();
+
+            categoryView.style.display = 'none';
+            viewerView.style.display = 'flex';
+            // 滚动到顶部
+            document.querySelector('.viewer-content').scrollTop = 0;
+            
+            // 添加历史记录
+            history.pushState({viewingSheet: true}, null);
+        }
+
+        // 加载乐谱图片
+        function loadImage(page) {
+            let imagePath;
+            if (currentState.currentVersion === '原谱') {
+                imagePath = `img/${currentState.currentCategory}/${currentState.currentSong.filename}_${page}.jpeg`;
+            } else {
+                imagePath = `img/${currentState.currentCategory}/${currentState.currentSong.filename}_${currentState.currentVersion}_${page}.jpeg`;
+            }
+            
+            sheetImage.src = imagePath;
+            
+            // 预加载相邻页面
+            if (page < currentState.totalPages) {
+                const nextImage = new Image();
+                if (currentState.currentVersion === '原谱') {
+                    nextImage.src = `img/${currentState.currentCategory}/${currentState.currentSong.filename}_${page + 1}.jpeg`;
+                } else {
+                    nextImage.src = `img/${currentState.currentCategory}/${currentState.currentSong.filename}_${currentState.currentVersion}_${page + 1}.jpeg`;
+                }
+            }
+            if (page > 1) {
+                const prevImage = new Image();
+                if (currentState.currentVersion === '原谱') {
+                    prevImage.src = `img/${currentState.currentCategory}/${currentState.currentSong.filename}_${page - 1}.jpeg`;
+                } else {
+                    prevImage.src = `img/${currentState.currentCategory}/${currentState.currentSong.filename}_${currentState.currentVersion}_${page - 1}.jpeg`;
+                }
             }
         }
-        
-        function getRandomNote() {
-            let validNotes = Array.from(selectedNotes);
-            if (excludeSharp) {
-                validNotes = validNotes.filter(note => !note.includes('#'));
-            }
-            currentNote = validNotes[Math.floor(Math.random() * validNotes.length)];
-        }
-        
-        function speakNoteName(note) {
-            if (isPlaying) {
-                const utterance = supportSpeech && speechEnabled ? new SpeechSynthesisUtterance(note.replace('#', ' sharp ')) : null;
-                for (let j = 0; j < answerCount; j++) {
-                    setTimeout(() => {
-                        if (supportSpeech && speechEnabled) {
-                            speechSynthesis.speak(utterance);
+
+        // 渲染版本切换按钮
+        function renderVersionButtons() {
+            versionButtonsContainer.innerHTML = '';
+            
+            if (currentState.availableVersions.length > 1) {
+                currentState.availableVersions.forEach(version => {
+                    const button = document.createElement('button');
+                    button.className = 'version-button';
+                    button.textContent = version;
+                    if (version === currentState.currentVersion) {
+                        button.style.opacity = '1';
+                        button.style.backgroundColor = 'rgba(0,0,0,0.7)';
+                    }
+                    button.addEventListener('click', () => {
+                        if (version !== currentState.currentVersion) {
+                            currentState.currentVersion = version;
+                            currentState.currentPage = 1;
+                            loadImage(currentState.currentPage);
+                            updatePageIndicator();
+                            renderVersionButtons();
                         }
-                        highlightCurrentNote(note);
-                        updateCurrentNoteDisplay(currentNote);
-                        playOneNote();
-                    }, j * speakInterval);
+                    });
+                    versionButtonsContainer.appendChild(button);
+                });
+            }
+        }
+
+        // 更新页码指示器
+        function updatePageIndicator() {
+            pageIndicator.textContent = `${currentState.currentPage} / ${currentState.totalPages}`;
+        }
+
+        // 关闭查看器
+        function closeViewer() {
+            viewerView.style.display = 'none';
+            categoryView.style.display = 'block';
+            // 添加历史记录
+            history.replaceState(null, null);
+        }
+
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 返回按钮
+            backButton.addEventListener('click', () => {
+                categoryView.style.display = 'none';
+                mainView.style.display = 'block';
+            });
+
+            // 关闭查看器按钮
+            closeViewerButton.addEventListener('click', closeViewer);
+
+            // 点击乐谱外区域关闭查看器
+            viewerContent.addEventListener('click', (e) => {
+                if (e.target === viewerContent) {
+                    closeViewer();
+                }
+            });
+
+            // 翻页按钮
+            prevPageButton.addEventListener('click', () => {
+                goToPrevPage();
+            });
+
+            nextPageButton.addEventListener('click', () => {
+                goToNextPage();
+            });
+
+            // 监听返回键（针对移动设备）
+            window.addEventListener('popstate', function(event) {
+                if (viewerView.style.display === 'flex') {
+                    // 如果正在查看乐谱，则关闭查看器而不退出页面
+                    closeViewer();
+                    // 阻止默认的返回行为
+                    history.pushState(null, null, document.URL);
+                    event.preventDefault();
+                }
+            });
+
+            // 上一页函数
+            function goToPrevPage() {
+                if (currentState.currentPage > 1) {
+                    currentState.currentPage--;
+                    loadImage(currentState.currentPage);
+                    updatePageIndicator();
+                    // 滚动到顶部
+                    document.querySelector('.viewer-content').scrollTop = 0;
+                }
+            }
+
+            // 下一页函数
+            function goToNextPage() {
+                if (currentState.currentPage < currentState.totalPages) {
+                    currentState.currentPage++;
+                    loadImage(currentState.currentPage);
+                    updatePageIndicator();
+                    // 滚动到顶部
+                    document.querySelector('.viewer-content').scrollTop = 0;
+                }
+            }
+
+            // 触摸滑动翻页
+            let touchStartX = 0;
+            let touchEndX = 0;
+            
+            document.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, false);
+
+            document.addEventListener('touchend', (e) => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, false);
+
+            function handleSwipe() {
+                if (!viewerView.style.display || viewerView.style.display === 'none') return;
+                
+                const threshold = 50; // 最小滑动距离
+                const diff = touchStartX - touchEndX;
+                
+                if (diff > threshold) {
+                    goToNextPage();
+                } else if (diff < -threshold) {
+                    goToPrevPage();
+                }
+            }
+
+            // 键盘事件监听
+            document.addEventListener('keydown', (e) => {
+                // ESC键退出查看器
+                if (e.key === 'Escape' && viewerView.style.display === 'flex') {
+                    closeViewer();
                 }
                 
-                setTimeout(() => {
-                    getRandomNote();
-                    playRepeatNote();
-                }, answerCount * speakInterval);
-            }
-        }
-
-        function updateCurrentNoteDisplay(note) {
-            $('#current-note-display').text(note);
-        }
-
-        function startPlaying() {
-            isPlaying = true;
-            $("#start-btn").prop("disabled", true);
-            $("#stop-btn").prop("disabled", false);
-            
-            getRandomNote();
-            playRepeatNote();
-        }
-
-        function stopPlaying() {
-            isPlaying = false;
-            $("#start-btn").prop("disabled", false);
-            $("#stop-btn").prop("disabled", true);
-            updateCurrentNoteDisplay(""); // 清空当前音符显示
-            highlightCurrentNote(null); // 移除高亮
-        }
-        
-        function showAlert(message) {
-            $('#alert-message').html(message.replace(/\n/g, '<br>'));
-            $('#alert-panel').css({"display": "block", "z-index": 2001});  // 确保 z-index 正确设置
-            
-            // 创建一个新的遮罩层
-            if (!$('#alert-overlay').length) {
-                $('body').append('<div id="alert-overlay"></div>');
-            }
-            $('#alert-overlay').css({
-                "display": "block",
-                "z-index": 2000  // 确保它在其他元素之上，但在 alert-panel 之下
-            });
-        
-            setTimeout(() => {
-                $('#alert-panel').addClass("show");
-                $('#alert-overlay').addClass("show");
-            }, 10);
-        
-            // 添加点击事件监听器到新的遮罩层
-            $('#alert-overlay').on("click", hideAlert);
-        }
-        
-        function hideAlert() {
-            $('#alert-panel').removeClass("show");
-            $('#alert-overlay').removeClass("show");
-            setTimeout(() => {
-                $('#alert-panel').css("display", "none");
-                $('#alert-overlay').css("display", "none");
-            }, 300);
-        
-            // 移除点击事件监听器
-            $('#alert-overlay').off("click", hideAlert);
-        }
-        
-        function createReadonlyNoteTable() {
-            const noteTable = $("#readonly-note-table");
-            noteTable.empty();
-            const octaves = ['0', '1', '2', '3', '4', '5', '6', '7', '8'];
-            const baseNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-        
-            let headerRow = $('<tr>');
-            headerRow.append($('<th>'));
-            baseNotes.forEach(note => {
-                headerRow.append($('<th>').text(note));
-            });
-            noteTable.append(headerRow);
-        
-            octaves.forEach(octave => {
-                let row = $('<tr>');
-                row.append($('<td>').text(octave));
-                baseNotes.forEach(note => {
-                    let fullNote = note + octave;
-                    if (notes.includes(fullNote)) {
-                        let cell = $('<td>').text(fullNote);
-                        row.append(cell);
-                    } else {
-                        row.append($('<td>'));
+                // 左右方向键翻页
+                if (viewerView.style.display === 'flex') {
+                    if (e.key === 'ArrowLeft') {
+                        goToPrevPage();
+                    } else if (e.key === 'ArrowRight') {
+                        goToNextPage();
                     }
-                });
-                noteTable.append(row);
+                }
             });
         }
-        
-        function updateReadonlyNoteTable() {
-            $("#readonly-note-table td").removeClass('note-selected');
-            selectedNotes.forEach(note => {
-                $(`#readonly-note-table td:contains('${note}')`).addClass('note-selected');
-            });
-        }
-        
-        function highlightCurrentNote(note) {
-            $("#readonly-note-table td").removeClass('note-highlighted');
-            if (note) {
-                $(`#readonly-note-table td:contains('${note}')`).addClass('note-highlighted');
-            }
-        }
+
+        // 启动应用
+        document.addEventListener('DOMContentLoaded', initApp);
     </script>
-    <div id="alert-panel" class="alert-panel">
-        <p id="alert-message"></p>
-        <button id="alert-close">关闭</button>
-    </div>
-    <div id="alert-overlay"></div>
 </body>
 </html>
