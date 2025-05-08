@@ -42,7 +42,7 @@
         .categories-list {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 0;
             padding: 10px;
         }
         
@@ -54,6 +54,9 @@
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1); /* 添加浅色分隔线 */
+            margin-bottom: 15px;  /* 底部间距替代gap */
+            padding-bottom: 15px; /* 增加内边距避免文字紧贴分隔线 */
         }
         
         .category-card:hover {
@@ -95,7 +98,7 @@
         .songs-list {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 0;
             padding: 0 20px;
         }
         
@@ -107,6 +110,9 @@
             transition: background-color 0.2s;
             display: flex;
             align-items: center;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08); /* 更浅的分隔线 */
+            margin-bottom: 12px;  /* 底部间距替代gap */
+            padding-bottom: 12px; /* 增加内边距避免文字紧贴分隔线 */
         }
         
         .song-item:hover {
