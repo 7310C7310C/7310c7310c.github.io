@@ -248,19 +248,32 @@
         }
         
         /* 优先显示选项 */
+        .version-select {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #d4c8b8;
+            background-color: #f5f1e8;
+            color: #5a4a3a;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .version-select:hover {
+            border-color: #8c6a4d;
+        }
+        
+        .version-select:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(140, 106, 77, 0.2);
+        }
+        
         .version-preference {
             display: flex;
             justify-content: center;
+            align-items: center;
             margin: 10px 0;
             gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .version-preference label {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            cursor: pointer;
         }
         
         /* 响应式设计 */
@@ -300,7 +313,10 @@
         <h1 class="main-title">复活计划乐队</h1>
         
         <div class="version-preference" id="versionPreference">
-            <!-- 优先显示选项将通过JS动态加载 -->
+            <span>优先显示：</span>
+            <select class="version-select" id="versionSelect">
+                <!-- 选项将通过JS动态加载 -->
+            </select>
         </div>
         
         <div class="categories-list" id="categoriesContainer">
@@ -486,41 +502,29 @@
                 });
             });
             
-            versionPreferenceContainer.innerHTML = '';
+            const versionSelect = document.getElementById('versionSelect');
+            versionSelect.innerHTML = '';
             
-            if (allVersions.size > 0) {
-                const label = document.createElement('span');
-                label.textContent = '优先显示：';
-                versionPreferenceContainer.appendChild(label);
-                
-                // 添加原谱选项
-                const originalLabel = document.createElement('label');
-                originalLabel.innerHTML = `
-                    <input type="radio" name="versionPreference" value="原谱" ${currentState.preferredVersion === '原谱' ? 'checked' : ''}>
-                    原谱
-                `;
-                originalLabel.addEventListener('change', () => {
-                    if (originalLabel.querySelector('input').checked) {
-                        currentState.preferredVersion = '原谱';
-                    }
-                });
-                versionPreferenceContainer.appendChild(originalLabel);
-                
-                // 添加其他版本选项
-                Array.from(allVersions).forEach(version => {
-                    const versionLabel = document.createElement('label');
-                    versionLabel.innerHTML = `
-                        <input type="radio" name="versionPreference" value="${version}" ${currentState.preferredVersion === version ? 'checked' : ''}>
-                        ${version}
-                    `;
-                    versionLabel.addEventListener('change', () => {
-                        if (versionLabel.querySelector('input').checked) {
-                            currentState.preferredVersion = version;
-                        }
-                    });
-                    versionPreferenceContainer.appendChild(versionLabel);
-                });
-            }
+            // 添加原谱选项
+            const originalOption = document.createElement('option');
+            originalOption.value = "原谱";
+            originalOption.textContent = "原谱";
+            originalOption.selected = currentState.preferredVersion === '原谱';
+            versionSelect.appendChild(originalOption);
+            
+            // 添加其他版本选项
+            Array.from(allVersions).forEach(version => {
+                const option = document.createElement('option');
+                option.value = version;
+                option.textContent = version;
+                option.selected = currentState.preferredVersion === version;
+                versionSelect.appendChild(option);
+            });
+            
+            // 添加事件监听
+            versionSelect.addEventListener('change', () => {
+                currentState.preferredVersion = versionSelect.value;
+            });
         }
 
         // 显示分类下的歌曲
