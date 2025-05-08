@@ -467,6 +467,13 @@
                             "pages": 1,
                             "filename": "奉献咏_001_我的生命献给你",
                             "versions": ["贝司"]
+                        },
+                        {
+                            "id": "006",
+                            "title": "献给我主",
+                            "pages": 1,
+                            "filename": "奉献咏_006_献给我主",
+                            "versions": []
                         }
                     ]
                 },
@@ -681,43 +688,39 @@
         function renderVersionButtons() {
             versionButtonsContainer.innerHTML = '';
             
-            if (currentState.availableVersions.length > 1) {
-                currentState.availableVersions.forEach(version => {
-                    const button = document.createElement('button');
-                    button.className = 'version-button';
-                    button.textContent = version;
-                    if (version === currentState.currentVersion) {
-                        button.classList.add('active');
+            // 总是显示版本切换按钮，即使只有原谱
+            currentState.availableVersions.forEach(version => {
+                const button = document.createElement('button');
+                button.className = 'version-button';
+                button.textContent = version;
+                if (version === currentState.currentVersion) {
+                    button.classList.add('active');
+                }
+                button.addEventListener('click', () => {
+                    if (version !== currentState.currentVersion) {
+                        currentState.currentVersion = version;
+                        currentState.currentPage = 1;
+                        loadImage(currentState.currentPage);
+                        updatePageIndicator();
+                        renderVersionButtons();
+                        // 关闭折叠菜单
+                        versionButtonsContainer.classList.remove('show');
+                        // 更新箭头方向
+                        document.querySelector('.version-toggle-button .arrow').textContent = '▼';
                     }
-                    button.addEventListener('click', () => {
-                        if (version !== currentState.currentVersion) {
-                            currentState.currentVersion = version;
-                            currentState.currentPage = 1;
-                            loadImage(currentState.currentPage);
-                            updatePageIndicator();
-                            renderVersionButtons();
-                            // 关闭折叠菜单
-                            versionButtonsContainer.classList.remove('show');
-                            // 更新箭头方向
-                            document.querySelector('.version-toggle-button .arrow').textContent = '▼';
-                        }
-                    });
-                    versionButtonsContainer.appendChild(button);
                 });
-                
-                // 更新切换按钮文本
-                versionButtonText.textContent = currentState.currentVersion;
-                const arrow = versionToggleButton.querySelector('.arrow') || document.createElement('span');
-                arrow.className = 'arrow';
-                arrow.textContent = '▼';
-                versionToggleButton.appendChild(arrow);
-                
-                // 显示版本切换按钮
-                versionToggleButton.style.display = 'flex';
-            } else {
-                // 如果只有一个版本，隐藏切换按钮
-                versionToggleButton.style.display = 'none';
-            }
+                versionButtonsContainer.appendChild(button);
+            });
+            
+            // 更新切换按钮文本
+            versionButtonText.textContent = currentState.currentVersion;
+            const arrow = versionToggleButton.querySelector('.arrow') || document.createElement('span');
+            arrow.className = 'arrow';
+            arrow.textContent = '▼';
+            versionToggleButton.appendChild(arrow);
+            
+            // 总是显示版本切换按钮
+            versionToggleButton.style.display = 'flex';
         }
 
         // 更新页码指示器
