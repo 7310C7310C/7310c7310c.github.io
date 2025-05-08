@@ -54,9 +54,9 @@
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1); /* 添加浅色分隔线 */
-            margin-bottom: 15px;  /* 底部间距替代gap */
-            padding-bottom: 15px; /* 增加内边距避免文字紧贴分隔线 */
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+            padding-bottom: 15px;
         }
         
         .category-card:hover {
@@ -110,9 +110,9 @@
             transition: background-color 0.2s;
             display: flex;
             align-items: center;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.08); /* 更浅的分隔线 */
-            margin-bottom: 12px;  /* 底部间距替代gap */
-            padding-bottom: 12px; /* 增加内边距避免文字紧贴分隔线 */
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            margin-bottom: 12px;
+            padding-bottom: 12px;
         }
         
         .song-item:hover {
@@ -163,7 +163,8 @@
             max-width: 100%;
         }
         
-        .page-indicator-container {
+        /* 页码指示器和版本按钮容器 */
+        .page-controls-container {
             position: fixed;
             bottom: 20px;
             left: 50%;
@@ -171,17 +172,49 @@
             display: flex;
             align-items: center;
             z-index: 110;
+        }
+        
+        .version-toggle-button {
             background-color: rgba(0,0,0,0.5);
-            border-radius: 20px;
+            border: none;
+            color: white;
             padding: 5px 10px;
+            border-radius: 20px 0 0 20px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: all 0.2s;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+        
+        .version-toggle-button:hover {
+            opacity: 1;
+            background-color: rgba(0,0,0,0.7);
+        }
+        
+        .version-toggle-button .arrow {
+            margin-left: 5px;
+            transition: transform 0.2s;
+            font-size: 0.8rem;
+        }
+        
+        .page-indicator-container {
+            display: flex;
+            align-items: center;
+            background-color: rgba(0,0,0,0.5);
+            border-radius: 0 20px 20px 0;
+            padding: 5px 10px;
+            height: 32px;
         }
         
         .page-nav {
             color: white;
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             cursor: pointer;
             opacity: 0.7;
-            padding: 0 10px;
+            padding: 0 8px;
             user-select: none;
         }
         
@@ -192,8 +225,51 @@
         .page-indicator {
             color: white;
             text-align: center;
-            padding: 0 15px;
+            padding: 0 10px;
             font-size: 0.9rem;
+        }
+        
+        .version-buttons {
+            position: absolute;
+            bottom: 40px;
+            left: 0;
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background-color: rgba(0,0,0,0.7);
+            border-radius: 8px;
+            padding: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 120;
+        }
+        
+        .version-buttons.show {
+            display: flex;
+        }
+        
+        .version-button {
+            background-color: transparent;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+            text-align: left;
+            white-space: nowrap;
+            font-size: 0.9rem;
+        }
+        
+        .version-button:hover {
+            opacity: 1;
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        .version-button.active {
+            opacity: 1;
+            background-color: rgba(140, 106, 77, 0.7);
         }
         
         .close-button {
@@ -217,32 +293,6 @@
         }
         
         .close-button:hover {
-            opacity: 1;
-            background-color: rgba(0,0,0,0.7);
-        }
-        
-        /* 版本切换按钮 */
-        .version-buttons {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            display: flex;
-            gap: 5px;
-            z-index: 110;
-        }
-        
-        .version-button {
-            background-color: rgba(0,0,0,0.5);
-            border: none;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            opacity: 0.7;
-            transition: opacity 0.2s;
-        }
-        
-        .version-button:hover {
             opacity: 1;
             background-color: rgba(0,0,0,0.7);
         }
@@ -298,11 +348,13 @@
                 font-size: 1.2rem;
             }
             
-            .version-buttons {
-                top: 70px;
-                left: 10px;
-                flex-wrap: wrap;
-                max-width: 80%;
+            .version-toggle-button {
+                font-size: 0.8rem;
+                padding: 5px 8px;
+            }
+            
+            .page-indicator {
+                font-size: 0.8rem;
             }
         }
     </style>
@@ -341,19 +393,27 @@
     
     <!-- 乐谱查看器 -->
     <div id="viewer-view">
-        <div class="version-buttons" id="versionButtons">
-            <!-- 版本切换按钮将通过JS动态加载 -->
-        </div>
         <button class="close-button" id="close-viewer">×</button>
         <div class="viewer-content" id="viewerContent">
             <div class="sheet-container">
                 <img id="sheet-image" class="sheet-image" src="" alt="乐谱">
             </div>
         </div>
-        <div class="page-indicator-container">
-            <div class="page-nav" id="prev-page">‹</div>
-            <div class="page-indicator" id="page-indicator">1 / 1</div>
-            <div class="page-nav" id="next-page">›</div>
+        
+        <!-- 新版版本切换按钮和页码指示器 -->
+        <div class="page-controls-container">
+            <button class="version-toggle-button" id="versionToggleButton">
+                <span id="versionButtonText">版本</span>
+                <span class="arrow">▼</span>
+            </button>
+            <div class="version-buttons" id="versionButtons">
+                <!-- 版本切换按钮将通过JS动态加载 -->
+            </div>
+            <div class="page-indicator-container">
+                <div class="page-nav" id="prev-page">‹</div>
+                <div class="page-indicator" id="page-indicator">1 / 1</div>
+                <div class="page-nav" id="next-page">›</div>
+            </div>
         </div>
     </div>
 
@@ -463,6 +523,8 @@
         const nextPageButton = document.getElementById('next-page');
         const pageIndicator = document.getElementById('page-indicator');
         const versionButtonsContainer = document.getElementById('versionButtons');
+        const versionToggleButton = document.getElementById('versionToggleButton');
+        const versionButtonText = document.getElementById('versionButtonText');
         const versionPreferenceContainer = document.getElementById('versionPreference');
 
         // 初始化应用
@@ -619,8 +681,7 @@
                     button.className = 'version-button';
                     button.textContent = version;
                     if (version === currentState.currentVersion) {
-                        button.style.opacity = '1';
-                        button.style.backgroundColor = 'rgba(0,0,0,0.7)';
+                        button.classList.add('active');
                     }
                     button.addEventListener('click', () => {
                         if (version !== currentState.currentVersion) {
@@ -629,10 +690,27 @@
                             loadImage(currentState.currentPage);
                             updatePageIndicator();
                             renderVersionButtons();
+                            // 关闭折叠菜单
+                            versionButtonsContainer.classList.remove('show');
+                            // 更新箭头方向
+                            document.querySelector('.version-toggle-button .arrow').textContent = '▼';
                         }
                     });
                     versionButtonsContainer.appendChild(button);
                 });
+                
+                // 更新切换按钮文本
+                versionButtonText.textContent = currentState.currentVersion;
+                const arrow = versionToggleButton.querySelector('.arrow') || document.createElement('span');
+                arrow.className = 'arrow';
+                arrow.textContent = '▼';
+                versionToggleButton.appendChild(arrow);
+                
+                // 显示版本切换按钮
+                versionToggleButton.style.display = 'flex';
+            } else {
+                // 如果只有一个版本，隐藏切换按钮
+                versionToggleButton.style.display = 'none';
             }
         }
 
@@ -674,6 +752,28 @@
 
             nextPageButton.addEventListener('click', () => {
                 goToNextPage();
+            });
+
+            // 版本切换按钮点击事件
+            versionToggleButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                versionButtonsContainer.classList.toggle('show');
+                const arrow = versionToggleButton.querySelector('.arrow');
+                if (versionButtonsContainer.classList.contains('show')) {
+                    arrow.textContent = '▲';
+                } else {
+                    arrow.textContent = '▼';
+                }
+            });
+
+            // 点击页面其他地方关闭版本选择菜单
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.version-buttons-container') && 
+                    !e.target.closest('.version-buttons')) {
+                    versionButtonsContainer.classList.remove('show');
+                    const arrow = versionToggleButton.querySelector('.arrow');
+                    if (arrow) arrow.textContent = '▼';
+                }
             });
 
             // 监听返回键（针对移动设备）
