@@ -69,8 +69,28 @@
             color: #6b4f3b;
         }
         
+        /* 确保按钮和 div 表现一致 */
+        button.category-card {
+            border: none; /* 去掉默认边框 */
+            width: 100%; /* 和分类卡片一样宽 */
+            font-family: inherit; /* 继承字体 */
+            font-size: inherit; /* 继承字号 */
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px; /* 和分类卡片一样的间距 */
+        }
+        
+        /* 只覆盖本周歌曲按钮的背景色 */
+        #weeklyButton.category-card {
+            background-color: #d4c8b8; /* 略深的颜色 */
+        }
+        
         /* 分类界面样式 */
         #category-view {
+            display: none;
+        }
+        
+        /* 本周歌曲界面样式 */
+        #weekly-view {
             display: none;
         }
         
@@ -88,11 +108,18 @@
             gap: 5px;
         }
         
-        #categoryTitle {
+        #categoryTitle, #weeklyTitle {
             text-align: center;
             margin-bottom: 30px;
             font-size: 1.8rem;
             color: #8c6a4d;
+        }
+        
+        .update-date {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #8c6a4d;
+            font-style: italic;
         }
         
         .songs-list {
@@ -124,6 +151,15 @@
             margin-right: 15px;
             color: #8c6a4d;
             min-width: 35px;
+        }
+        
+        .song-category {
+            background-color: #8c6a4d;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-right: 15px;
         }
         
         /* 乐谱查看器样式 */
@@ -337,7 +373,7 @@
                 padding: 20px;
             }
             
-            #categoryTitle {
+            #categoryTitle, #weeklyTitle {
                 font-size: 1.5rem;
                 margin-bottom: 25px;
             }
@@ -356,6 +392,11 @@
             .page-indicator {
                 font-size: 0.8rem;
             }
+            
+            .song-category {
+                margin-right: 10px;
+                font-size: 0.7rem;
+            }
         }
     </style>
 </head>
@@ -370,6 +411,10 @@
                 <!-- 选项将通过JS动态加载 -->
             </select>
         </div>
+        
+        <button class="category-card" id="weeklyButton">
+            <h2 style="margin: 0;">本周歌曲</h2>
+        </button>
         
         <div class="categories-list" id="categoriesContainer">
             <!-- 分类将通过JS动态加载 -->
@@ -388,6 +433,22 @@
         <h2 id="categoryTitle"></h2>
         <div class="songs-list" id="songsContainer">
             <!-- 歌曲列表将通过JS动态加载 -->
+        </div>
+    </div>
+    
+    <!-- 本周歌曲界面 -->
+    <div id="weekly-view" class="container">
+        <button class="back-button" id="backButtonWeekly">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            返回
+        </button>
+        <h2 id="weeklyTitle">本周歌曲</h2>
+        <div class="update-date" id="updateDate"></div>
+        <div class="songs-list" id="weeklySongsContainer">
+            <!-- 本周歌曲列表将通过JS动态加载 -->
         </div>
     </div>
     
@@ -644,7 +705,49 @@
                 } 
             ] 
         } 
-    ] 
+    ],
+    
+    // 本周歌曲数据
+    "weeklySongs": {
+        "updateDate": "2025/05/11",
+        "songs": [
+            {
+                "category": "进堂咏",
+                "id": "014",
+                "title": "请众高歌齐乐鸣"
+            },
+            {
+                "category": "垂怜曲",
+                "id": "001",
+                "title": "垂怜曲"
+            },
+            {
+                "category": "福音前欢呼",
+                "id": "",
+                "title": ""
+            },
+            {
+                "category": "奉献咏",
+                "id": "006",
+                "title": "献给我主"
+            },
+            {
+                "category": "领主咏",
+                "id": "001",
+                "title": "主，我在这里"
+            },
+            {
+                "category": "领主咏",
+                "id": "009",
+                "title": "上主是我的光明，我的救援"
+            },
+            {
+                "category": "礼成咏",
+                "id": "004",
+                "title": "圣母颂"
+            }
+        ]
+    }
 };
 
         // 当前状态
@@ -661,12 +764,17 @@
         // DOM元素
         const mainView = document.getElementById('main-view');
         const categoryView = document.getElementById('category-view');
+        const weeklyView = document.getElementById('weekly-view');
         const viewerView = document.getElementById('viewer-view');
         const viewerContent = document.getElementById('viewerContent');
         const categoriesContainer = document.getElementById('categoriesContainer');
         const categoryTitle = document.getElementById('categoryTitle');
+        const weeklyTitle = document.getElementById('weeklyTitle');
+        const updateDate = document.getElementById('updateDate');
         const songsContainer = document.getElementById('songsContainer');
+        const weeklySongsContainer = document.getElementById('weeklySongsContainer');
         const backButton = document.getElementById('backButton');
+        const backButtonWeekly = document.getElementById('backButtonWeekly');
         const closeViewerButton = document.getElementById('close-viewer');
         const sheetImage = document.getElementById('sheet-image');
         const prevPageButton = document.getElementById('prev-page');
@@ -676,6 +784,7 @@
         const versionToggleButton = document.getElementById('versionToggleButton');
         const versionButtonText = document.getElementById('versionButtonText');
         const versionPreferenceContainer = document.getElementById('versionPreference');
+        const weeklyButton = document.getElementById('weeklyButton');
 
         // 初始化应用
         function initApp() {
@@ -764,8 +873,45 @@
             categoryView.style.display = 'block';
         }
 
+        // 显示本周歌曲
+        function showWeeklySongs() {
+            currentState.openedFrom = null;
+            updateDate.textContent = `更新日期：${songsData.weeklySongs.updateDate}`;
+            weeklySongsContainer.innerHTML = '';
+            
+            songsData.weeklySongs.songs.forEach((song, index) => {
+                // 查找完整的歌曲信息
+                const category = songsData.categories.find(c => c.name === song.category);
+                if (!category) return;
+                
+                const fullSong = category.songs.find(s => s.id === song.id);
+                if (!fullSong) return;
+                
+                const songElement = document.createElement('div');
+                songElement.className = 'song-item';
+                    //<div class="song-number">${index + 1}</div>
+                songElement.innerHTML = `
+                    <div class="song-category">${song.category} ${song.id}</div>
+                    <div class="song-title">${song.title}</div>
+                `;
+                songElement.addEventListener('click', () => showSong(song.category, fullSong));
+                weeklySongsContainer.appendChild(songElement);
+            });
+
+            mainView.style.display = 'none';
+            weeklyView.style.display = 'block';
+        }
+
         // 显示乐谱
         function showSong(categoryName, song) {
+            // 记录是从哪个界面打开的
+            if (weeklyView.style.display === 'block') {
+                currentState.openedFrom = 'weekly';
+            } else if (categoryView.style.display === 'block') {
+                currentState.openedFrom = 'category';
+            }
+            
+            currentState.currentCategory = categoryName;
             currentState.currentSong = song;
             currentState.currentPage = 1;
             currentState.totalPages = song.pages;
@@ -783,6 +929,7 @@
             renderVersionButtons();
 
             categoryView.style.display = 'none';
+            weeklyView.style.display = 'none';
             viewerView.style.display = 'flex';
             // 滚动到顶部
             document.querySelector('.viewer-content').scrollTop = 0;
@@ -868,8 +1015,18 @@
         // 关闭查看器
         function closeViewer() {
             viewerView.style.display = 'none';
-            categoryView.style.display = 'block';
-            // 添加历史记录
+            
+            // 添加一个状态标记来记录是从哪个界面打开的查看器
+            if (currentState.openedFrom === 'weekly') {
+                weeklyView.style.display = 'block';
+            } else if (currentState.openedFrom === 'category') {
+                categoryView.style.display = 'block';
+            } else {
+                mainView.style.display = 'block';
+            }
+            
+            // 清除打开来源标记
+            currentState.openedFrom = null;
             history.replaceState(null, null);
         }
 
@@ -878,6 +1035,12 @@
             // 返回按钮
             backButton.addEventListener('click', () => {
                 categoryView.style.display = 'none';
+                mainView.style.display = 'block';
+            });
+            
+            // 本周歌曲返回按钮
+            backButtonWeekly.addEventListener('click', () => {
+                weeklyView.style.display = 'none';
                 mainView.style.display = 'block';
             });
 
@@ -922,12 +1085,27 @@
                 }
             });
 
+            // 本周歌曲按钮点击事件
+            weeklyButton.addEventListener('click', showWeeklySongs);
+
             // 监听返回键（针对移动设备）
             window.addEventListener('popstate', function(event) {
                 if (viewerView.style.display === 'flex') {
                     // 如果正在查看乐谱，则关闭查看器而不退出页面
                     closeViewer();
                     // 阻止默认的返回行为
+                    history.pushState(null, null, document.URL);
+                    event.preventDefault();
+                } else if (categoryView.style.display === 'block') {
+                    // 如果在分类视图，返回主视图
+                    categoryView.style.display = 'none';
+                    mainView.style.display = 'block';
+                    history.pushState(null, null, document.URL);
+                    event.preventDefault();
+                } else if (weeklyView.style.display === 'block') {
+                    // 如果在本周歌曲视图，返回主视图
+                    weeklyView.style.display = 'none';
+                    mainView.style.display = 'block';
                     history.pushState(null, null, document.URL);
                     event.preventDefault();
                 }
