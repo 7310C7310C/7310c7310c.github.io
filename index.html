@@ -419,102 +419,233 @@
 
     <script>
         // 乐谱数据
-        const songsData = {
-            "categories": [
-                {
-                    "name": "进堂咏",
-                    "songs": [
-                        {
-                            "id": "001",
-                            "title": "Gather the People",
-                            "pages": 2,
-                            "filename": "进堂咏_001_Gather the People",
-                            "versions": ["贝司"]
-                        },
-                        {
-                            "id": "014",
-                            "title": "请众高歌齐乐鸣",
-                            "pages": 1,
-                            "filename": "进堂咏_014_请众高歌齐乐鸣",
-                            "versions": []
-                        }
-                    ]
-                },
-                {
-                    "name": "垂怜曲",
-                    "songs": [
-                        
-                    ]
-                },
-                {
-                    "name": "光荣颂",
-                    "songs": [
-                        {
-                            "id": "001",
-                            "title": "Glory To God",
-                            "pages": 2,
-                            "filename": "光荣颂_001_Glory To God",
-                            "versions": ["贝司"]
-                        }
-                    ]
-                },
-                {
-                    "name": "福音前欢呼",
-                    "songs": [
-                        
-                    ]
-                },
-                {
-                    "name": "奉献咏",
-                    "songs": [
-                        {
-                            "id": "001",
-                            "title": "我的生命献给你",
-                            "pages": 1,
-                            "filename": "奉献咏_001_我的生命献给你",
-                            "versions": ["贝司"]
-                        },
-                        {
-                            "id": "006",
-                            "title": "献给我主",
-                            "pages": 1,
-                            "filename": "奉献咏_006_献给我主",
-                            "versions": []
-                        }
-                    ]
-                },
-                {
-                    "name": "天主经",
-                    "songs": [
-                        
-                    ]
-                },
-                {
-                    "name": "领主咏",
-                    "songs": [
-                        {
-                            "id": "009",
-                            "title": "上主是我的光明，我的救援",
-                            "pages": 2,
-                            "filename": "领主咏_009_上主是我的光明，我的救援",
-                            "versions": []
-                        }
-                    ]
-                },
-                {
-                    "name": "礼成咏",
-                    "songs": [
-                        
-                    ]
-                },
-                {
-                    "name": "圣诞",
-                    "songs": [
-                        
-                    ]
-                }
-            ]
-        };
+        const songsData =
+{ 
+    "categories": [ 
+        { 
+            "name": "进堂咏", 
+            "songs": [ 
+                { 
+                    "id": "001", 
+                    "title": "Gather the People", 
+                    "pages": 2, 
+                    "filename": "进堂咏_001_Gather the People", 
+                    "versions": ["贝司"] 
+                } 
+, 
+                { 
+                    "id": "002", 
+                    "title": "你是荣耀的君王", 
+                    "pages": 1, 
+                    "filename": "进堂咏_002_你是荣耀的君王", 
+                    "versions": ["贝司"] 
+                } 
+, 
+                { 
+                    "id": "004", 
+                    "title": "上主所安排的日", 
+                    "pages": 1, 
+                    "filename": "进堂咏_004_上主所安排的日", 
+                    "versions": ["贝司"] 
+                } 
+, 
+                { 
+                    "id": "014", 
+                    "title": "请众高歌齐乐鸣", 
+                    "pages": 1, 
+                    "filename": "进堂咏_014_请众高歌齐乐鸣", 
+                    "versions": [] 
+                } 
+            ] 
+        } 
+, 
+        { 
+            "name": "垂怜曲", 
+            "songs": [ 
+                { 
+                    "id": "001", 
+                    "title": "垂怜曲", 
+                    "pages": 1, 
+                    "filename": "垂怜曲_001_垂怜曲", 
+                    "versions": ["贝司"] 
+                } 
+            ] 
+        } 
+, 
+        { 
+            "name": "光荣颂", 
+            "songs": [ 
+                { 
+                    "id": "001", 
+                    "title": "Glory To God", 
+                    "pages": 2, 
+                    "filename": "光荣颂_001_Glory To God", 
+                    "versions": ["贝司"] 
+                } 
+            ] 
+        } 
+, 
+        { 
+            "name": "福音前欢呼", 
+            "songs": [ 
+                { 
+                    "id": "002", 
+                    "title": "阿肋路亚", 
+                    "pages": 1, 
+                    "filename": "福音前欢呼_002_阿肋路亚", 
+                    "versions": ["贝司"] 
+                } 
+, 
+                { 
+                    "id": "004", 
+                    "title": "阿肋路亚", 
+                    "pages": 1, 
+                    "filename": "福音前欢呼_004_阿肋路亚", 
+                    "versions": ["贝司"] 
+                } 
+, 
+                { 
+                    "id": "006", 
+                    "title": "阿肋路亚", 
+                    "pages": 1, 
+                    "filename": "福音前欢呼_006_阿肋路亚", 
+                    "versions": [] 
+                } 
+            ] 
+        } 
+, 
+        { 
+            "name": "奉献咏", 
+            "songs": [ 
+                { 
+                    "id": "001", 
+                    "title": "我的生命献给你", 
+                    "pages": 1, 
+                    "filename": "奉献咏_001_我的生命献给你", 
+                    "versions": ["贝司"] 
+                } 
+, 
+                { 
+                    "id": "003", 
+                    "title": "仁慈万有的主", 
+                    "pages": 1, 
+                    "filename": "奉献咏_003_仁慈万有的主", 
+                    "versions": ["贝司"] 
+                } 
+, 
+                { 
+                    "id": "006", 
+                    "title": "献给我主", 
+                    "pages": 1, 
+                    "filename": "奉献咏_006_献给我主", 
+                    "versions": [] 
+                } 
+            ] 
+        } 
+, 
+        { 
+            "name": "天主经", 
+            "songs": [ 
+            ] 
+        } 
+, 
+
+        { 
+            "name": "领主咏", 
+            "songs": [ 
+                { 
+                    "id": "001", 
+                    "title": "主，我在这里", 
+                    "pages": 1, 
+                    "filename": "领主咏_001_主，我在这里", 
+                    "versions": ["贝司"] 
+                } 
+, 
+                { 
+                    "id": "002", 
+                    "title": "耶稣基督是生命源", 
+                    "pages": 1, 
+                    "filename": "领主咏_002_耶稣基督是生命源", 
+                    "versions": ["贝司"] 
+                } 
+, 
+                { 
+                    "id": "005", 
+                    "title": "我不要再忧愁惧怕", 
+                    "pages": 1, 
+                    "filename": "领主咏_005_我不要再忧愁惧怕", 
+                    "versions": ["贝司"] 
+                } 
+, 
+                { 
+                    "id": "009", 
+                    "title": "上主是我的光明，我的救援", 
+                    "pages": 2, 
+                    "filename": "领主咏_009_上主是我的光明，我的救援", 
+                    "versions": [] 
+                } 
+            ] 
+        } 
+,
+        { 
+            "name": "礼成咏", 
+            "songs": [ 
+                { 
+                    "id": "001", 
+                    "title": "真光普照", 
+                    "pages": 1, 
+                    "filename": "礼成咏_001_真光普照", 
+                    "versions": ["贝司"] 
+                } 
+, 
+                { 
+                    "id": "004", 
+                    "title": "圣母颂", 
+                    "pages": 1, 
+                    "filename": "礼成咏_004_圣母颂", 
+                    "versions": ["贝司"] 
+                } 
+, 
+                { 
+                    "id": "010", 
+                    "title": "齐向上主唱新歌", 
+                    "pages": 1, 
+                    "filename": "礼成咏_010_齐向上主唱新歌", 
+                    "versions": [] 
+                } 
+            ] 
+        } 
+, 
+        { 
+            "name": "圣诞", 
+            "songs": [ 
+                { 
+                    "id": "001", 
+                    "title": "齐来钦崇", 
+                    "pages": 2, 
+                    "filename": "圣诞_001_齐来钦崇", 
+                    "versions": ["贝司"] 
+                } 
+, 
+                { 
+                    "id": "002", 
+                    "title": "请赞美！高声欢呼！", 
+                    "pages": 1, 
+                    "filename": "圣诞_002_请赞美！高声欢呼！", 
+                    "versions": ["贝司"] 
+                } 
+, 
+                { 
+                    "id": "003", 
+                    "title": "我要开口向你歌颂赞美", 
+                    "pages": 2, 
+                    "filename": "圣诞_003_我要开口向你歌颂赞美", 
+                    "versions": ["贝司"] 
+                } 
+            ] 
+        } 
+    ] 
+};
 
         // 当前状态
         let currentState = {
