@@ -1194,6 +1194,9 @@
 
         // 加载乐谱图片
         function loadImage(page) {
+            // 先清除图片源
+            sheetImage.src = '';
+            
             let imagePath;
             if (currentState.currentVersion === '原谱') {
                 imagePath = `img/${currentState.currentCategory}/${currentState.currentSong.filename}_${page}.jpeg`;
