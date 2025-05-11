@@ -1094,6 +1094,9 @@
             renderCategories();
             renderVersionPreference();
             setupEventListeners();
+            
+            loadingOverlay.style.display = 'none';
+            loadingIndicator.style.display = 'none';
         }
 
         // 渲染分类列表
