@@ -397,6 +397,44 @@
                 margin-right: 10px;
                 font-size: 0.7rem;
             }
+
+            .loading-indicator {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                color: white;
+                font-size: 1.2rem;
+                z-index: 105;
+                display: none;
+            }
+
+            .loading-spinner {
+                border: 4px solid rgba(255, 255, 255, 0.3);
+                border-radius: 50%;
+                border-top: 4px solid white;
+                width: 40px;
+                height: 40px;
+                animation: spin 1s linear infinite;
+                margin: 0 auto 10px;
+            }
+
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+
+            /* 在查看器背景上添加半透明遮罩 */
+            .loading-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.7);
+                z-index: 104;
+                display: none;
+            }
         }
     </style>
 </head>
@@ -476,6 +514,12 @@
                 <div class="page-nav" id="next-page">›</div>
             </div>
         </div>
+    </div>
+    
+    <div class="loading-overlay" id="loadingOverlay"></div>
+    <div class="loading-indicator" id="loadingIndicator">
+        <div class="loading-spinner"></div>
+        <div>加载中...</div>
     </div>
 
     <script>
@@ -1039,6 +1083,8 @@
         const versionButtonText = document.getElementById('versionButtonText');
         const versionPreferenceContainer = document.getElementById('versionPreference');
         const weeklyButton = document.getElementById('weeklyButton');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const loadingIndicator = document.getElementById('loadingIndicator');
 
         // 初始化应用
         function initApp() {
@@ -1158,6 +1204,9 @@
 
         // 显示乐谱
         function showSong(categoryName, song) {
+            loadingOverlay.style.display = 'none';
+            loadingIndicator.style.display = 'none';
+            
             // 记录是从哪个界面打开的
             if (weeklyView.style.display === 'block') {
                 currentState.openedFrom = 'weekly';
@@ -1194,6 +1243,10 @@
 
         // 加载乐谱图片
         function loadImage(page) {
+            // 显示加载指示器
+            loadingOverlay.style.display = 'block';
+            loadingIndicator.style.display = 'block';
+            
             // 先清除图片源
             sheetImage.src = '';
             
@@ -1204,9 +1257,22 @@
                 imagePath = `img/${currentState.currentCategory}/${currentState.currentSong.filename}_${currentState.currentVersion}_${page}.jpeg`;
             }
             
+            // 图片加载完成时隐藏指示器
+            sheetImage.onload = function() {
+                loadingOverlay.style.display = 'none';
+                loadingIndicator.style.display = 'none';
+            };
+            
+            // 图片加载出错时也隐藏指示器
+            sheetImage.onerror = function() {
+                loadingOverlay.style.display = 'none';
+                loadingIndicator.style.display = 'none';
+                // 可以在这里添加错误处理，比如显示一个错误消息
+            };
+            
             sheetImage.src = imagePath;
             
-            // 预加载相邻页面
+            // 预加载相邻页面（保持原有逻辑）
             if (page < currentState.totalPages) {
                 const nextImage = new Image();
                 if (currentState.currentVersion === '原谱') {
@@ -1271,6 +1337,8 @@
 
         // 关闭查看器
         function closeViewer() {
+            loadingOverlay.style.display = 'none';
+            loadingIndicator.style.display = 'none';
             viewerView.style.display = 'none';
             
             // 添加一个状态标记来记录是从哪个界面打开的查看器
