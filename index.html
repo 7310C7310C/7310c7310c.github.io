@@ -936,6 +936,60 @@
                 font-size: 0.8rem;
             }
         }
+
+        /* 语言切换按钮样式 */
+        .language-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: rgba(140, 106, 77, 0.7);
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: background-color 0.2s, transform 0.2s;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .language-button:hover {
+            background-color: rgba(140, 106, 77, 0.9);
+            transform: scale(1.05);
+        }
+        
+        @media (max-width: 768px) {
+            .language-button {
+                width: 40px;
+                height: 40px;
+                top: 15px;
+                left: 15px;
+                font-size: 0.8rem;
+            }
+        }
+        
+        /* 在查看器模式下隐藏语言按钮 */
+        #viewer-view .language-button,
+        #category-view .language-button,
+        #weekly-view .language-button {
+            display: none;
+        }
+        
+        /* 在搜索结果显示时隐藏语言按钮 */
+        body.search-active .language-button {
+            display: none;
+        }
+        
+        /* 最近查看和收藏区域样式 */
+        .recently-viewed-container,
+        .favorites-container {
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
@@ -986,6 +1040,9 @@
             <path d="M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z"></path>
         </svg>
     </button>
+    
+    <!-- 语言切换按钮 -->
+    <button class="language-button" id="languageButton">中/En</button>
     
     <!-- 历史/收藏面板 -->
     <div class="history-panel-container" id="historyPanel">
@@ -1087,6 +1144,119 @@
     </div>
 
     <script>
+        // 语言配置
+        const translations = {
+            'zh': {
+                // 标题和导航
+                'mainTitle': '复活计划乐队',
+                'weeklyButton': '本周歌曲',
+                'backButton': '返回',
+                'searchPlaceholder': '搜索歌曲……',
+                'preferredVersion': '优先显示：',
+                'updateDate': '更新日期：',
+                'clearSearch': '×',
+                
+                // 乐谱查看器
+                'loadingText': '加载中……',
+                'versionText': '版本',
+                'sheetMusic': '乐谱',
+                
+                // 历史和收藏
+                'historyPanelTitle': '历史与收藏',
+                'recentTab': '最近查看',
+                'favoritesTab': '收藏',
+                'clearButton': '清空',
+                'noRecords': '暂无记录',
+                'noFavorites': '暂无收藏',
+                
+                // 搜索结果
+                'searchResults': '搜索结果',
+                'noMatchingSongs': '没有找到匹配的歌曲',
+                
+                // 确认消息
+                'confirmClearHistory': '确定要清空最近查看记录吗？',
+                
+                // 分类名称
+                'categories': {
+                    '进堂咏': '进堂咏',
+                    '垂怜曲': '垂怜曲',
+                    '光荣颂': '光荣颂',
+                    '福音前欢呼': '福音前欢呼',
+                    '奉献咏': '奉献咏',
+                    '天主经': '天主经',
+                    '领主咏': '领主咏',
+                    '礼成咏': '礼成咏',
+                    '圣诞': '圣诞'
+                },
+                
+                // 版本名称
+                'versions': {
+                    '原谱': '原谱',
+                    '贝司': '贝司',
+                    '吉他': '吉他'
+                },
+                
+                // 歌曲数量文本
+                'songsCount': '首歌曲'
+            },
+            'en': {
+                // 标题和导航
+                'mainTitle': 'Vita Plan',
+                'weeklyButton': 'Weekly Songs',
+                'backButton': 'Back',
+                'searchPlaceholder': 'Search songs...',
+                'preferredVersion': 'Preferred Version:',
+                'updateDate': 'Update Date:',
+                'clearSearch': '×',
+                
+                // 乐谱查看器
+                'loadingText': 'Loading...',
+                'versionText': 'Version',
+                'sheetMusic': 'Sheet Music',
+                
+                // 历史和收藏
+                'historyPanelTitle': 'History & Favorites',
+                'recentTab': 'Recently Viewed',
+                'favoritesTab': 'Favorites',
+                'clearButton': 'Clear',
+                'noRecords': 'No Records',
+                'noFavorites': 'No Favorites',
+                
+                // 搜索结果
+                'searchResults': 'Search Results',
+                'noMatchingSongs': 'No matching songs found',
+                
+                // 确认消息
+                'confirmClearHistory': 'Clear recently viewed history?',
+                
+                // 分类名称
+                'categories': {
+                    '进堂咏': 'Entrance',
+                    '垂怜曲': 'Kyrie',
+                    '光荣颂': 'Gloria',
+                    '福音前欢呼': 'Gospel Acclamation',
+                    '奉献咏': 'Offertory',
+                    '天主经': 'The Lord\'s Prayer',
+                    '领主咏': 'Communion',
+                    '礼成咏': 'Recessional',
+                    '圣诞': 'Christmas'
+                },
+                
+                // 版本名称
+                'versions': {
+                    '原谱': 'Original',
+                    '贝司': 'Bass',
+                    '吉他': 'Guitar'
+                },
+                
+                // 歌曲数量文本
+                'songsCount': 'songs'
+            }
+        };
+        
+        // 当前语言
+        let currentLanguage = 'zh';
+
         // 乐谱数据
         const songsData =
 { 
@@ -1867,6 +2037,9 @@
             // 初始化本地存储
             storageManager.initialize();
             
+            // 初始化语言设置
+            initLanguage();
+            
             renderCategories();
             renderVersionPreference();
             setupEventListeners();
@@ -1880,15 +2053,215 @@
             loadingIndicator.style.display = 'none';
         }
 
+        // 初始化语言设置
+        function initLanguage() {
+            // 尝试从本地存储加载语言设置
+            const savedLang = localStorage.getItem('fhj_language');
+            if (savedLang && (savedLang === 'zh' || savedLang === 'en')) {
+                currentLanguage = savedLang;
+            }
+            
+            // 应用翻译
+            applyTranslations();
+        }
+        
+        // 切换语言
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'zh' ? 'en' : 'zh';
+            localStorage.setItem('fhj_language', currentLanguage);
+            applyTranslations();
+            
+            // 重新渲染分类列表以更新"首歌曲"/"songs"显示
+            renderCategories();
+        }
+        
+        // 获取翻译
+        function t(key, section = null) {
+            if (section) {
+                return translations[currentLanguage][section][key] || key;
+            }
+            return translations[currentLanguage][key] || key;
+        }
+        
+        // 应用翻译到UI
+        function applyTranslations() {
+            // 更新主标题
+            document.querySelector('.main-title').textContent = t('mainTitle');
+            
+            // 更新搜索框
+            searchInput.placeholder = t('searchPlaceholder');
+            
+            // 更新本周歌曲按钮
+            document.querySelector('#weeklyButton h2').textContent = t('weeklyButton');
+            
+            // 更新返回按钮
+            const backButtons = document.querySelectorAll('.back-button');
+            backButtons.forEach(btn => {
+                const textNode = Array.from(btn.childNodes).find(node => 
+                    node.nodeType === Node.TEXT_NODE && node.textContent.trim()
+                );
+                if (textNode) {
+                    textNode.textContent = t('backButton');
+                }
+            });
+            
+            // 更新加载文本
+            document.querySelector('#loadingIndicator div:last-child').textContent = t('loadingText');
+            
+            // 更新历史面板
+            document.querySelector('.history-panel-title').textContent = t('historyPanelTitle');
+            document.querySelector('#recentTab').textContent = t('recentTab');
+            document.querySelector('#favoritesTab').textContent = t('favoritesTab');
+            document.querySelectorAll('.clear-button').forEach(btn => {
+                btn.textContent = t('clearButton');
+            });
+            
+            // 更新面板内标题
+            const recentPanelTitle = document.querySelector('#recentPanel .section-title');
+            if (recentPanelTitle) {
+                recentPanelTitle.textContent = t('recentTab');
+            }
+            
+            const favoritesPanelTitle = document.querySelector('#favoritesPanel .section-title');
+            if (favoritesPanelTitle) {
+                favoritesPanelTitle.textContent = t('favoritesTab');
+            }
+            
+            // 更新无记录提示
+            const updateEmptyMessages = () => {
+                const recentList = document.querySelector('#recentlyViewedList');
+                const favoritesList = document.querySelector('#favoritesList');
+                
+                if (recentList && recentList.querySelector('.empty-list-message')) {
+                    recentList.querySelector('.empty-list-message').textContent = t('noRecords');
+                }
+                
+                if (favoritesList && favoritesList.querySelector('.empty-list-message')) {
+                    favoritesList.querySelector('.empty-list-message').textContent = t('noFavorites');
+                }
+            };
+            updateEmptyMessages();
+            
+            // 更新搜索结果标题
+            document.querySelector('.search-results-title').textContent = t('searchResults');
+            
+            // 更新优先显示文本
+            document.querySelector('#versionPreference span').textContent = t('preferredVersion');
+            
+            // 更新版本按钮文本
+            if (versionButtonText) {
+                const version = currentState.currentVersion || '原谱';
+                versionButtonText.textContent = t(version, 'versions');
+            }
+            
+            // 更新乐谱图片alt属性
+            const sheetImage = document.getElementById('sheet-image');
+            if (sheetImage) {
+                sheetImage.alt = t('sheetMusic');
+            }
+            
+            // 更新分类列表
+            updateCategoryNames();
+            
+            // 更新周歌曲标题
+            document.querySelector('#weeklyTitle').textContent = t('weeklyButton');
+            
+            // 更新分类标题
+            if (currentState.currentCategory) {
+                categoryTitle.textContent = t(currentState.currentCategory, 'categories');
+            }
+            
+            // 更新版本切换按钮文本
+            if (versionButtonText) {
+                const version = currentState.currentVersion || '原谱';
+                versionButtonText.textContent = t(version, 'versions');
+            }
+            
+            // 更新版本选择下拉菜单中的选项
+            updateVersionSelect();
+        }
+        
+        // 更新分类名称（在列表中和显示歌曲时）
+        function updateCategoryNames() {
+            // 更新分类卡片
+            const categoryCards = document.querySelectorAll('.category-card:not(#weeklyButton)');
+            categoryCards.forEach(card => {
+                const titleElement = card.querySelector('h2');
+                if (titleElement) {
+                    const originalName = titleElement.getAttribute('data-original-name') || titleElement.textContent;
+                    titleElement.setAttribute('data-original-name', originalName);
+                    titleElement.textContent = t(originalName, 'categories');
+                }
+            });
+            
+            // 更新歌曲列表中的分类标签
+            const categoryLabels = document.querySelectorAll('.song-category');
+            categoryLabels.forEach(label => {
+                const text = label.textContent;
+                const parts = text.split(' ');
+                if (parts.length >= 2) {
+                    const categoryName = parts[0];
+                    const songId = parts.slice(1).join(' ');
+                    label.textContent = `${t(categoryName, 'categories')} ${songId}`;
+                }
+            });
+        }
+        
+        // 更新版本选择下拉菜单
+        function updateVersionSelect() {
+            const versionSelect = document.getElementById('versionSelect');
+            if (!versionSelect) return;
+            
+            // 保存当前选中的值
+            const selectedValue = versionSelect.value;
+            
+            // 清空并重新填充选项
+            versionSelect.innerHTML = '';
+            
+            // 添加原谱选项
+            const originalOption = document.createElement('option');
+            originalOption.value = "原谱";
+            originalOption.textContent = t('原谱', 'versions');
+            originalOption.selected = selectedValue === '原谱';
+            versionSelect.appendChild(originalOption);
+            
+            // 获取所有版本并添加到下拉菜单
+            const allVersions = getAllVersions();
+            allVersions.forEach(version => {
+                if (version !== '原谱') {
+                    const option = document.createElement('option');
+                    option.value = version;
+                    option.textContent = t(version, 'versions');
+                    option.selected = selectedValue === version;
+                    versionSelect.appendChild(option);
+                }
+            });
+        }
+        
+        // 获取所有可用的版本名称
+        function getAllVersions() {
+            const allVersions = new Set(['原谱']);
+            songsData.categories.forEach(category => {
+                category.songs.forEach(song => {
+                    song.versions.forEach(version => {
+                        allVersions.add(version);
+                    });
+                });
+            });
+            return Array.from(allVersions);
+        }
+
         // 渲染分类列表
         function renderCategories() {
             categoriesContainer.innerHTML = '';
             songsData.categories.forEach(category => {
                 const categoryElement = document.createElement('div');
                 categoryElement.className = 'category-card';
+                
+                // 使用 data-original-name 保存原始名称以便语言切换
                 categoryElement.innerHTML = `
-                    <h2>${category.name}</h2>
-                    <p>${category.songs.length} 首歌曲</p>
+                    <h2 data-original-name="${category.name}">${t(category.name, 'categories')}</h2>
+                    <p>${category.songs.length} ${t('songsCount')}</p>
                 `;
                 categoryElement.addEventListener('click', () => showCategory(category.name));
                 categoriesContainer.appendChild(categoryElement);
@@ -1898,14 +2271,7 @@
         // 渲染版本偏好选项
         function renderVersionPreference() {
             // 收集所有可用的版本
-            const allVersions = new Set();
-            songsData.categories.forEach(category => {
-                category.songs.forEach(song => {
-                    song.versions.forEach(version => {
-                        allVersions.add(version);
-                    });
-                });
-            });
+            const allVersions = getAllVersions();
             
             const versionSelect = document.getElementById('versionSelect');
             versionSelect.innerHTML = '';
@@ -1913,18 +2279,23 @@
             // 添加原谱选项
             const originalOption = document.createElement('option');
             originalOption.value = "原谱";
-            originalOption.textContent = "原谱";
+            originalOption.textContent = t('原谱', 'versions');
             originalOption.selected = currentState.preferredVersion === '原谱';
             versionSelect.appendChild(originalOption);
             
             // 添加其他版本选项
             Array.from(allVersions).forEach(version => {
-                const option = document.createElement('option');
-                option.value = version;
-                option.textContent = version;
-                option.selected = currentState.preferredVersion === version;
-                versionSelect.appendChild(option);
+                if (version !== '原谱') {
+                    const option = document.createElement('option');
+                    option.value = version;
+                    option.textContent = t(version, 'versions');
+                    option.selected = currentState.preferredVersion === version;
+                    versionSelect.appendChild(option);
+                }
             });
+            
+            // 更新"优先显示"文本
+            document.querySelector('#versionPreference span').textContent = t('preferredVersion');
             
             // 添加事件监听
             versionSelect.addEventListener('change', () => {
@@ -1938,7 +2309,7 @@
             if (!category) return;
 
             currentState.currentCategory = categoryName;
-            categoryTitle.textContent = categoryName;
+            categoryTitle.textContent = t(categoryName, 'categories');
             songsContainer.innerHTML = '';
 
             category.songs.forEach((song) => {
@@ -1955,14 +2326,15 @@
             mainView.style.display = 'none';
             categoryView.style.display = 'block';
             
-            // 隐藏历史按钮
+            // 隐藏历史按钮和语言切换按钮
             historyButton.style.display = 'none';
+            document.getElementById('languageButton').style.display = 'none';
         }
 
         // 显示本周歌曲
         function showWeeklySongs() {
             currentState.openedFrom = null;
-            updateDate.textContent = `更新日期：${songsData.weeklySongs.updateDate}`;
+            updateDate.textContent = `${t('updateDate')}${songsData.weeklySongs.updateDate}`;
             weeklySongsContainer.innerHTML = '';
             
             songsData.weeklySongs.songs.forEach((song, index) => {
@@ -1975,7 +2347,7 @@
                 const songElement = document.createElement('div');
                 songElement.className = 'song-item';
                 songElement.innerHTML = `
-                    <div class="song-category">${song.category} ${song.id}</div>
+                    <div class="song-category">${t(song.category, 'categories')} ${song.id}</div>
                     <div class="song-title">${song.title}</div>
                 `;
                 songElement.addEventListener('click', () => showSong(song.category, fullSong));
@@ -1985,8 +2357,9 @@
             mainView.style.display = 'none';
             weeklyView.style.display = 'block';
             
-            // 隐藏历史按钮
+            // 隐藏历史按钮和语言切换按钮
             historyButton.style.display = 'none';
+            document.getElementById('languageButton').style.display = 'none';
         }
 
         // 显示乐谱
@@ -2104,7 +2477,7 @@
             currentState.availableVersions.forEach(version => {
                 const button = document.createElement('button');
                 button.className = 'version-button';
-                button.textContent = version;
+                button.textContent = t(version, 'versions');
                 if (version === currentState.currentVersion) {
                     button.classList.add('active');
                 }
@@ -2125,7 +2498,7 @@
             });
             
             // 更新切换按钮文本
-            versionButtonText.textContent = currentState.currentVersion;
+            versionButtonText.textContent = t(currentState.currentVersion, 'versions');
             const arrow = versionToggleButton.querySelector('.arrow') || document.createElement('span');
             arrow.className = 'arrow';
             arrow.textContent = '▼';
@@ -2169,8 +2542,13 @@
                     searchInput.value = currentState.lastSearchQuery;
                 }
                 
-                // 搜索结果界面不显示历史按钮
+                // 搜索结果界面不显示历史按钮和语言切换按钮
                 historyButton.style.display = 'none';
+                document.getElementById('languageButton').style.display = 'none';
+                
+                // 添加搜索激活标志
+                document.body.classList.add('search-active');
+                
             } else if (currentState.openedFrom === 'history') {
                 // 从历史/收藏面板回来，返回主界面
                 mainView.style.display = 'block';
@@ -2197,16 +2575,18 @@
             backButton.addEventListener('click', () => {
                 categoryView.style.display = 'none';
                 mainView.style.display = 'block';
-                // 返回主界面时显示历史按钮
+                // 返回主界面时显示历史按钮和语言切换按钮
                 historyButton.style.display = 'flex';
+                document.getElementById('languageButton').style.display = 'flex';
             });
             
             // 本周歌曲返回按钮
             backButtonWeekly.addEventListener('click', () => {
                 weeklyView.style.display = 'none';
                 mainView.style.display = 'block';
-                // 返回主界面时显示历史按钮
+                // 返回主界面时显示历史按钮和语言切换按钮
                 historyButton.style.display = 'flex';
+                document.getElementById('languageButton').style.display = 'flex';
             });
 
             // 关闭查看器按钮
@@ -2252,6 +2632,11 @@
 
             // 本周歌曲按钮点击事件
             weeklyButton.addEventListener('click', showWeeklySongs);
+
+            // 语言切换按钮点击事件
+            document.getElementById('languageButton').addEventListener('click', () => {
+                toggleLanguage();
+            });
 
             // 监听返回键（针对移动设备）
             window.addEventListener('popstate', function(event) {
@@ -2368,6 +2753,9 @@
                 // 在主界面显示历史/收藏按钮
                 historyButton.style.display = 'flex';
                 
+                // 移除搜索激活标志
+                document.body.classList.remove('search-active');
+                
                 // 清除后让搜索框重新获得焦点
                 searchInput.focus();
             });
@@ -2381,7 +2769,7 @@
 
             // 清空最近查看按钮
             clearRecentlyViewed.addEventListener('click', () => {
-                if (confirm('确定要清空最近查看记录吗？')) {
+                if (confirm(t('confirmClearHistory'))) {
                     storageManager.clearRecentlyViewed();
                     renderRecentlyViewed();
                 }
@@ -2456,6 +2844,12 @@
             searchInput.addEventListener('input', () => {
                 if (searchInput.value.trim() !== '') {
                     clearSearchButton.classList.add('visible');
+                    
+                    // 当输入内容时，隐藏语言切换按钮
+                    document.getElementById('languageButton').style.display = 'none';
+                    
+                    // 添加搜索激活标志
+                    document.body.classList.add('search-active');
                 } else {
                     clearSearchButton.classList.remove('visible');
                     
@@ -2466,8 +2860,12 @@
                     versionPreferenceContainer.style.display = '';
                     currentState.isSearchActive = false;
                     
-                    // 显示历史/收藏按钮
+                    // 显示历史/收藏按钮和语言切换按钮
                     historyButton.style.display = 'flex';
+                    document.getElementById('languageButton').style.display = 'flex';
+                    
+                    // 移除搜索激活标志
+                    document.body.classList.remove('search-active');
                 }
             });
             
@@ -2520,11 +2918,15 @@
                     searchInput.blur();
                     currentState.isSearchActive = false;
                     
-                    // 在主界面显示历史/收藏按钮
+                    // 在主界面显示历史/收藏按钮和语言切换按钮
                     historyButton.style.display = 'flex';
+                    document.getElementById('languageButton').style.display = 'flex';
                     
                     // 隐藏清除按钮
                     clearSearchButton.classList.remove('visible');
+                    
+                    // 移除搜索激活标志
+                    document.body.classList.remove('search-active');
                 }
             });
         }
@@ -2538,6 +2940,13 @@
                 weeklyButton.style.display = '';
                 versionPreferenceContainer.style.display = '';
                 currentState.isSearchActive = false;
+                
+                // 隐藏历史/收藏按钮
+                historyButton.style.display = 'flex';
+                
+                // 移除搜索激活标志
+                document.body.classList.remove('search-active');
+                
                 return;
             }
             
@@ -2560,7 +2969,8 @@
             const matchedSongs = allSongs.filter(song => 
                 song.title.toLowerCase().includes(query) || 
                 song.id.toLowerCase().includes(query) ||
-                song.category.toLowerCase().includes(query)
+                song.category.toLowerCase().includes(query) || 
+                (currentLanguage === 'en' && t(song.category, 'categories').toLowerCase().includes(query))
             );
             
             // 显示搜索结果
@@ -2570,7 +2980,7 @@
                     const songElement = document.createElement('div');
                     songElement.className = 'song-item';
                     songElement.innerHTML = `
-                        <div class="song-category">${song.category} ${song.id}</div>
+                        <div class="song-category">${t(song.category, 'categories')} ${song.id}</div>
                         <div class="song-title">${song.title}</div>
                     `;
                     songElement.addEventListener('click', () => {
@@ -2582,7 +2992,7 @@
             } else {
                 const noResults = document.createElement('div');
                 noResults.className = 'no-results';
-                noResults.textContent = '没有找到匹配的歌曲';
+                noResults.textContent = t('noMatchingSongs');
                 searchResultsList.appendChild(noResults);
             }
             
@@ -2594,6 +3004,9 @@
             
             // 隐藏历史/收藏按钮
             historyButton.style.display = 'none';
+            
+            // 添加搜索激活标志
+            document.body.classList.add('search-active');
         }
         
         // 防抖函数
@@ -2611,7 +3024,7 @@
             
             // 如果没有最近查看记录，显示空消息
             if (recentData.items.length === 0) {
-                recentlyViewedList.innerHTML = '<div class="empty-list-message">暂无记录</div>';
+                recentlyViewedList.innerHTML = `<div class="empty-list-message">${t('noRecords')}</div>`;
                 return;
             }
             
@@ -2622,7 +3035,7 @@
                 const songElement = document.createElement('div');
                 songElement.className = 'song-item';
                 songElement.innerHTML = `
-                    <div class="song-category">${item.category} ${item.id}</div>
+                    <div class="song-category">${t(item.category, 'categories')} ${item.id}</div>
                     <div class="song-title">${item.title}</div>
                 `;
                 
@@ -2650,7 +3063,7 @@
             
             // 如果没有收藏，显示空消息
             if (favoritesData.items.length === 0) {
-                favoritesList.innerHTML = '<div class="empty-list-message">暂无收藏</div>';
+                favoritesList.innerHTML = `<div class="empty-list-message">${t('noFavorites')}</div>`;
                 return;
             }
             
@@ -2665,7 +3078,7 @@
                 const songInfo = document.createElement('div');
                 songInfo.className = 'song-info';
                 songInfo.innerHTML = `
-                    <div class="song-category">${item.category} ${item.id}</div>
+                    <div class="song-category">${t(item.category, 'categories')} ${item.id}</div>
                     <div class="song-title">${item.title}</div>
                 `;
                 
