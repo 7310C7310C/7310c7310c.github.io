@@ -201,8 +201,6 @@
             width: 100%;
             height: auto;
             max-width: 100%;
-            transform-origin: center center;
-            touch-action: manipulation; /* 优化触摸体验 */
         }
         
         /* 页码指示器和版本按钮容器 */
@@ -938,50 +936,6 @@
                 font-size: 0.8rem;
             }
         }
-        
-        /* 添加缩放控制按钮样式 */
-        .zoom-controls {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            background-color: rgba(0,0,0,0.5);
-            border-radius: 20px;
-            padding: 5px;
-            z-index: 110;
-            opacity: 0.7;
-            transition: opacity 0.2s;
-        }
-        
-        .zoom-controls:hover {
-            opacity: 1;
-        }
-        
-        .zoom-button {
-            background: none;
-            border: none;
-            color: white;
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.5rem;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        
-        .zoom-button:hover {
-            background-color: rgba(255,255,255,0.2);
-        }
-        
-        .zoom-reset {
-            margin: 0 5px;
-            padding: 0 10px;
-            font-size: 0.9rem;
-        }
     </style>
 </head>
 <body>
@@ -1103,14 +1057,6 @@
                 <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
             </svg>
         </button>
-        
-        <!-- 缩放控制按钮 -->
-        <div class="zoom-controls">
-            <button class="zoom-button" id="zoom-out">−</button>
-            <span class="zoom-button zoom-reset" id="zoom-level">100%</span>
-            <button class="zoom-button" id="zoom-in">+</button>
-        </div>
-        
         <div class="viewer-content" id="viewerContent">
             <div class="sheet-container">
                 <img id="sheet-image" class="sheet-image" src="" alt="乐谱">
@@ -2098,9 +2044,6 @@
             
             // 添加历史记录
             history.pushState({viewingSheet: true}, null);
-            
-            // 重置缩放状态
-            resetZoom();
         }
 
         // 加载乐谱图片
@@ -2503,9 +2446,6 @@
                 favoritesPanel.classList.add('active');
                 recentPanel.classList.remove('active');
             });
-            
-            // 缩放功能相关事件
-            setupZoomFeature();
         }
 
         // 搜索功能
@@ -2782,145 +2722,6 @@
                 songElement.appendChild(unfavoriteButton);
                 favoritesList.appendChild(songElement);
             });
-        }
-
-        // 缩放功能的实现
-        function setupZoomFeature() {
-            const sheetImage = document.getElementById('sheet-image');
-            const viewerContent = document.getElementById('viewerContent');
-            const zoomInButton = document.getElementById('zoom-in');
-            const zoomOutButton = document.getElementById('zoom-out');
-            const zoomLevelDisplay = document.getElementById('zoom-level');
-            
-            // 缩放状态
-            let currentScale = 1;
-            let initialScale = 1;
-            let lastScale = 1;
-            let startX = 0;
-            let startY = 0;
-            let lastX = 0;
-            let lastY = 0;
-            let translateX = 0;
-            let translateY = 0;
-            
-            // 最小和最大缩放限制
-            const MIN_SCALE = 0.5;
-            const MAX_SCALE = 3;
-            const SCALE_STEP = 0.2;
-            
-            // 按钮缩放
-            zoomInButton.addEventListener('click', () => {
-                setScale(currentScale + SCALE_STEP);
-            });
-            
-            zoomOutButton.addEventListener('click', () => {
-                setScale(currentScale - SCALE_STEP);
-            });
-            
-            // 点击缩放级别重置
-            zoomLevelDisplay.addEventListener('click', () => {
-                resetZoom();
-            });
-            
-            // 双击缩放
-            sheetImage.addEventListener('dblclick', (e) => {
-                e.preventDefault();
-                
-                if (currentScale !== 1) {
-                    // 如果不是1倍缩放，重置到1倍
-                    resetZoom();
-                } else {
-                    // 如果是1倍，放大到2倍
-                    setScale(2);
-                }
-            });
-            
-            // 触摸事件 - 捏合缩放
-            let initialTouchDistance = 0;
-            
-            sheetImage.addEventListener('touchstart', (e) => {
-                if (e.touches.length === 2) {
-                    // 捏合开始
-                    initialTouchDistance = getTouchDistance(e.touches);
-                    initialScale = currentScale;
-                    e.preventDefault();
-                } else if (e.touches.length === 1 && currentScale > 1) {
-                    // 单指拖动开始
-                    startX = e.touches[0].clientX;
-                    startY = e.touches[0].clientY;
-                    lastX = translateX;
-                    lastY = translateY;
-                    e.preventDefault();
-                }
-            });
-            
-            sheetImage.addEventListener('touchmove', (e) => {
-                if (e.touches.length === 2) {
-                    // 捏合缩放中
-                    const currentDistance = getTouchDistance(e.touches);
-                    const newScale = initialScale * (currentDistance / initialTouchDistance);
-                    setScale(newScale);
-                    e.preventDefault();
-                } else if (e.touches.length === 1 && currentScale > 1) {
-                    // 单指拖动中
-                    const currentX = e.touches[0].clientX;
-                    const currentY = e.touches[0].clientY;
-                    translateX = lastX + (currentX - startX);
-                    translateY = lastY + (currentY - startY);
-                    applyTransform();
-                    e.preventDefault();
-                }
-            });
-            
-            sheetImage.addEventListener('touchend', (e) => {
-                if (e.touches.length < 2) {
-                    // 捏合结束，记录最终比例
-                    lastScale = currentScale;
-                }
-            });
-            
-            // 计算两个触摸点之间的距离
-            function getTouchDistance(touches) {
-                const dx = touches[0].clientX - touches[1].clientX;
-                const dy = touches[0].clientY - touches[1].clientY;
-                return Math.sqrt(dx * dx + dy * dy);
-            }
-            
-            // 设置缩放比例
-            function setScale(newScale) {
-                // 限制缩放范围
-                currentScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, newScale));
-                
-                // 如果缩放恢复到1，重置位移
-                if (currentScale === 1) {
-                    translateX = 0;
-                    translateY = 0;
-                }
-                
-                applyTransform();
-            }
-            
-            // 应用变换
-            function applyTransform() {
-                sheetImage.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentScale})`;
-                updateZoomLevelDisplay();
-            }
-            
-            // 更新缩放级别显示
-            function updateZoomLevelDisplay() {
-                const percentage = Math.round(currentScale * 100);
-                zoomLevelDisplay.textContent = `${percentage}%`;
-            }
-            
-            // 重置缩放
-            window.resetZoom = function() {
-                currentScale = 1;
-                initialScale = 1;
-                lastScale = 1;
-                translateX = 0;
-                translateY = 0;
-                applyTransform();
-            };
         }
 
         // 启动应用
