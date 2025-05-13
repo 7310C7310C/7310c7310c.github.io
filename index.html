@@ -561,6 +561,381 @@
                 font-size: 1.1rem;
             }
         }
+        
+        /* 最近查看和临时收藏区域样式 */
+        .section-title {
+            text-align: center;
+            color: #8c6a4d;
+            margin: 25px 0 15px;
+            font-size: 1.5rem;
+            position: relative;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 25px 0 15px;
+            position: relative;
+        }
+        
+        .section-header .section-title {
+            margin: 0;
+        }
+        
+        .clear-button {
+            position: absolute;
+            right: 0;
+            background: none;
+            border: none;
+            color: #8c6a4d;
+            font-size: 0.9rem;
+            cursor: pointer;
+            opacity: 0.7;
+            padding: 5px 10px;
+            transition: opacity 0.2s;
+        }
+        
+        .clear-button:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+        
+        .recently-viewed-container,
+        .temp-favorites-container {
+            margin-bottom: 20px;
+        }
+        
+        .empty-list-message {
+            text-align: center;
+            padding: 15px;
+            color: #8c6a4d;
+            font-style: italic;
+        }
+        
+        /* 临时收藏按钮样式 */
+        .favorite-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: rgba(0,0,0,0.5);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 110;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        
+        .favorite-button:hover {
+            opacity: 1;
+            background-color: rgba(0,0,0,0.7);
+        }
+        
+        .favorite-button.active svg {
+            fill: #ff5e5e;
+            stroke: #ff5e5e;
+        }
+        
+        /* 收藏项目的取消收藏按钮 */
+        .unfavorite-button {
+            background: none;
+            border: none;
+            color: #8c6a4d;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-left: 10px;
+            transition: all 0.2s;
+        }
+        
+        .unfavorite-button svg {
+            width: 16px;
+            height: 16px;
+            fill: #ff5e5e;
+            stroke: #ff5e5e;
+            transition: all 0.2s;
+        }
+        
+        .unfavorite-button:hover {
+            background-color: rgba(255, 94, 94, 0.1);
+            transform: scale(1.1);
+        }
+        
+        /* 收藏项目布局 */
+        .favorite-item {
+            display: flex;
+            align-items: center;
+        }
+        
+        .favorite-item .song-info {
+            flex: 1;
+            display: flex;
+        }
+        
+        .favorite-item .song-category {
+            margin-right: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .favorite-button {
+                width: 35px;
+                height: 35px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .section-title {
+                font-size: 1.3rem;
+            }
+            
+            .clear-button {
+                font-size: 0.8rem;
+            }
+        }
+        
+        /* 最近查看和收藏区域样式 */
+        .section-title {
+            text-align: center;
+            color: #8c6a4d;
+            margin: 25px 0 15px;
+            font-size: 1.5rem;
+            position: relative;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 25px 0 15px;
+            position: relative;
+        }
+        
+        .section-header .section-title {
+            margin: 0;
+        }
+        
+        .clear-button {
+            position: absolute;
+            right: 0;
+            background: none;
+            border: none;
+            color: #8c6a4d;
+            font-size: 0.9rem;
+            cursor: pointer;
+            opacity: 0.7;
+            padding: 5px 10px;
+            transition: opacity 0.2s;
+        }
+        
+        .clear-button:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+        
+        .history-panel-container {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 320px;
+            height: 100vh;
+            background-color: rgba(245, 241, 232, 0.97);
+            box-shadow: -3px 0 10px rgba(0, 0, 0, 0.15);
+            z-index: 150;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .history-panel-container.show {
+            transform: translateX(0);
+        }
+        
+        .history-panel-header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(140, 106, 77, 0.2);
+        }
+        
+        .history-panel-title {
+            font-size: 1.3rem;
+            color: #8c6a4d;
+            margin: 0;
+        }
+        
+        .history-panel-close {
+            background: none;
+            border: none;
+            color: #8c6a4d;
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+        
+        .history-panel-close:hover {
+            background-color: rgba(140, 106, 77, 0.1);
+        }
+        
+        .history-panel-content {
+            padding: 0 15px 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .history-tab-container {
+            display: flex;
+            border-bottom: 1px solid rgba(140, 106, 77, 0.2);
+            margin: 0 -15px 15px;
+        }
+        
+        .history-tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            color: #8c6a4d;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        
+        .history-tab.active {
+            border-bottom: 2px solid #8c6a4d;
+            background-color: rgba(140, 106, 77, 0.1);
+        }
+        
+        .history-tab:hover {
+            background-color: rgba(140, 106, 77, 0.05);
+        }
+        
+        .history-tab-panel {
+            display: none;
+        }
+        
+        .history-tab-panel.active {
+            display: block;
+        }
+        
+        .history-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: rgba(140, 106, 77, 0.7);
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 110;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        
+        .history-button:hover {
+            background-color: rgba(140, 106, 77, 0.9);
+            transform: scale(1.05);
+        }
+        
+        .history-button svg {
+            width: 24px;
+            height: 24px;
+        }
+        
+        .recently-viewed-container,
+        .favorites-container {
+            margin-bottom: 20px;
+        }
+        
+        .empty-list-message {
+            text-align: center;
+            padding: 15px;
+            color: #8c6a4d;
+            font-style: italic;
+        }
+        
+        /* 收藏按钮样式 */
+        .favorite-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: rgba(0,0,0,0.5);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 110;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        
+        .favorite-button:hover {
+            opacity: 1;
+            background-color: rgba(0,0,0,0.7);
+        }
+        
+        .favorite-button.active svg {
+            fill: #ff5e5e;
+            stroke: #ff5e5e;
+        }
+        
+        @media (max-width: 768px) {
+            .favorite-button {
+                width: 35px;
+                height: 35px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .history-button {
+                width: 40px;
+                height: 40px;
+                top: 15px;
+                right: 15px;
+            }
+            
+            .history-button svg {
+                width: 20px;
+                height: 20px;
+            }
+            
+            .history-panel-container {
+                width: 100%;
+            }
+            
+            .section-title {
+                font-size: 1.3rem;
+            }
+            
+            .clear-button {
+                font-size: 0.8rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -604,6 +979,45 @@
         </div>
     </div>
     
+    <!-- 右上角历史/收藏按钮 -->
+    <button class="history-button" id="historyButton">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path>
+            <path d="M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z"></path>
+        </svg>
+    </button>
+    
+    <!-- 历史/收藏面板 -->
+    <div class="history-panel-container" id="historyPanel">
+        <div class="history-panel-header">
+            <h3 class="history-panel-title">历史与收藏</h3>
+            <button class="history-panel-close" id="historyPanelClose">×</button>
+        </div>
+        <div class="history-tab-container">
+            <div class="history-tab active" id="recentTab">最近查看</div>
+            <div class="history-tab" id="favoritesTab">收藏</div>
+        </div>
+        <div class="history-panel-content">
+            <div class="history-tab-panel active" id="recentPanel">
+                <div class="section-header">
+                    <h2 class="section-title">最近查看</h2>
+                    <button class="clear-button" id="clearRecentlyViewed">清空</button>
+                </div>
+                <div class="songs-list" id="recentlyViewedList">
+                    <!-- 最近查看的歌曲将通过JS动态加载 -->
+                </div>
+            </div>
+            <div class="history-tab-panel" id="favoritesPanel">
+                <div class="section-header">
+                    <h2 class="section-title">收藏</h2>
+                </div>
+                <div class="songs-list" id="favoritesList">
+                    <!-- 收藏的歌曲将通过JS动态加载 -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- 分类界面 -->
     <div id="category-view" class="container">
         <button class="back-button" id="backButton">
@@ -638,6 +1052,11 @@
     <!-- 乐谱查看器 -->
     <div id="viewer-view">
         <button class="close-button" id="close-viewer">×</button>
+        <button class="favorite-button" id="favoriteButton">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
+            </svg>
+        </button>
         <div class="viewer-content" id="viewerContent">
             <div class="sheet-container">
                 <img id="sheet-image" class="sheet-image" src="" alt="乐谱">
@@ -1216,6 +1635,186 @@
             lastSearchQuery: ""
         };
 
+        // 本地存储管理
+        const storageManager = {
+            // 键名
+            keys: {
+                recentlyViewed: 'fhj_recently_viewed',
+                favorites: 'fhj_favorites'
+            },
+            
+            // 初始化存储
+            initialize() {
+                // 如果本地存储中没有数据，创建初始结构
+                if (!localStorage.getItem(this.keys.recentlyViewed)) {
+                    localStorage.setItem(this.keys.recentlyViewed, JSON.stringify({
+                        items: [],
+                        maxItems: 10
+                    }));
+                }
+                
+                if (!localStorage.getItem(this.keys.favorites)) {
+                    localStorage.setItem(this.keys.favorites, JSON.stringify({
+                        items: []
+                    }));
+                }
+                
+                // 兼容旧版本：将临时收藏迁移到收藏
+                const oldKey = 'fhj_temp_favorites';
+                if (localStorage.getItem(oldKey)) {
+                    try {
+                        const oldData = JSON.parse(localStorage.getItem(oldKey));
+                        if (oldData && oldData.items && oldData.items.length > 0) {
+                            const favoritesData = this.getFavorites();
+                            // 合并数据，避免重复
+                            oldData.items.forEach(item => {
+                                if (!favoritesData.items.some(
+                                    f => f.id === item.id && f.category === item.category
+                                )) {
+                                    favoritesData.items.push(item);
+                                }
+                            });
+                            localStorage.setItem(this.keys.favorites, JSON.stringify(favoritesData));
+                        }
+                        // 删除旧数据
+                        localStorage.removeItem(oldKey);
+                    } catch (e) {
+                        console.error('迁移旧收藏数据失败', e);
+                    }
+                }
+            },
+            
+            // 获取最近查看记录
+            getRecentlyViewed() {
+                try {
+                    return JSON.parse(localStorage.getItem(this.keys.recentlyViewed));
+                } catch (e) {
+                    console.error('获取最近查看记录失败', e);
+                    return { items: [], maxItems: 10 };
+                }
+            },
+            
+            // 添加最近查看记录
+            addToRecentlyViewed(song, category) {
+                try {
+                    const recentlyViewed = this.getRecentlyViewed();
+                    
+                    // 检查是否已存在，如果存在则删除旧记录
+                    const existingIndex = recentlyViewed.items.findIndex(
+                        item => item.id === song.id && item.category === category
+                    );
+                    
+                    if (existingIndex !== -1) {
+                        recentlyViewed.items.splice(existingIndex, 1);
+                    }
+                    
+                    // 添加新记录到开头
+                    recentlyViewed.items.unshift({
+                        id: song.id,
+                        title: song.title,
+                        category: category,
+                        timestamp: Date.now()
+                    });
+                    
+                    // 如果超过最大数量，删除最旧的
+                    if (recentlyViewed.items.length > recentlyViewed.maxItems) {
+                        recentlyViewed.items.pop();
+                    }
+                    
+                    // 保存到本地存储
+                    localStorage.setItem(this.keys.recentlyViewed, JSON.stringify(recentlyViewed));
+                    return true;
+                } catch (e) {
+                    console.error('添加最近查看记录失败', e);
+                    return false;
+                }
+            },
+            
+            // 清空最近查看记录
+            clearRecentlyViewed() {
+                try {
+                    localStorage.setItem(this.keys.recentlyViewed, JSON.stringify({
+                        items: [],
+                        maxItems: 10
+                    }));
+                    return true;
+                } catch (e) {
+                    console.error('清空最近查看记录失败', e);
+                    return false;
+                }
+            },
+            
+            // 获取收藏
+            getFavorites() {
+                try {
+                    return JSON.parse(localStorage.getItem(this.keys.favorites));
+                } catch (e) {
+                    console.error('获取收藏失败', e);
+                    return { items: [] };
+                }
+            },
+            
+            // 添加/移除收藏
+            toggleFavorite(song, category) {
+                try {
+                    const favorites = this.getFavorites();
+                    
+                    // 检查是否已经收藏
+                    const existingIndex = favorites.items.findIndex(
+                        item => item.id === song.id && item.category === category
+                    );
+                    
+                    // 如果已存在，则移除
+                    if (existingIndex !== -1) {
+                        favorites.items.splice(existingIndex, 1);
+                        localStorage.setItem(this.keys.favorites, JSON.stringify(favorites));
+                        return false; // 返回false表示已取消收藏
+                    }
+                    
+                    // 如果不存在，添加到收藏
+                    favorites.items.push({
+                        id: song.id,
+                        title: song.title,
+                        category: category,
+                        timestamp: Date.now()
+                    });
+                    
+                    // 保存到本地存储
+                    localStorage.setItem(this.keys.favorites, JSON.stringify(favorites));
+                    return true; // 返回true表示已添加收藏
+                } catch (e) {
+                    console.error('切换收藏状态失败', e);
+                    return null;
+                }
+            },
+            
+            // 清空收藏
+            clearFavorites() {
+                try {
+                    localStorage.setItem(this.keys.favorites, JSON.stringify({
+                        items: []
+                    }));
+                    return true;
+                } catch (e) {
+                    console.error('清空收藏失败', e);
+                    return false;
+                }
+            },
+            
+            // 检查是否已收藏
+            isFavorite(songId, category) {
+                try {
+                    const favorites = this.getFavorites();
+                    return favorites.items.some(
+                        item => item.id === songId && item.category === category
+                    );
+                } catch (e) {
+                    console.error('检查收藏状态失败', e);
+                    return false;
+                }
+            }
+        };
+
         // DOM元素
         const mainView = document.getElementById('main-view');
         const categoryView = document.getElementById('category-view');
@@ -1246,16 +1845,36 @@
         const searchResults = document.getElementById('searchResults');
         const searchResultsList = document.getElementById('searchResultsList');
         const clearSearchButton = document.getElementById('clearSearch');
+        const favoriteButton = document.getElementById('favoriteButton');
+        const recentlyViewedContainer = document.getElementById('recentlyViewedContainer');
+        const recentlyViewedList = document.getElementById('recentlyViewedList');
+        const favoritesList = document.getElementById('favoritesList');
+        const clearRecentlyViewed = document.getElementById('clearRecentlyViewed');
+        const clearFavorites = document.getElementById('clearFavorites');
+        const historyButton = document.getElementById('historyButton');
+        const historyPanel = document.getElementById('historyPanel');
+        const historyPanelClose = document.getElementById('historyPanelClose');
+        const recentTab = document.getElementById('recentTab');
+        const favoritesTab = document.getElementById('favoritesTab');
+        const recentPanel = document.getElementById('recentPanel');
+        const favoritesPanel = document.getElementById('favoritesPanel');
 
         // 初始化应用
         function initApp() {
             // 初始添加一个历史记录
             history.replaceState(null, null);
             
+            // 初始化本地存储
+            storageManager.initialize();
+            
             renderCategories();
             renderVersionPreference();
             setupEventListeners();
             setupSearchFunction();
+            
+            // 渲染最近查看和收藏
+            renderRecentlyViewed();
+            renderFavorites();
             
             loadingOverlay.style.display = 'none';
             loadingIndicator.style.display = 'none';
@@ -1325,7 +1944,6 @@
             category.songs.forEach((song) => {
                 const songElement = document.createElement('div');
                 songElement.className = 'song-item';
-                // 直接使用歌曲的ID作为序号（已经是三位数）
                 songElement.innerHTML = `
                     <div class="song-number">${song.id}</div>
                     <div class="song-title">${song.title}</div>
@@ -1336,6 +1954,9 @@
 
             mainView.style.display = 'none';
             categoryView.style.display = 'block';
+            
+            // 隐藏历史按钮
+            historyButton.style.display = 'none';
         }
 
         // 显示本周歌曲
@@ -1345,7 +1966,6 @@
             weeklySongsContainer.innerHTML = '';
             
             songsData.weeklySongs.songs.forEach((song, index) => {
-                // 查找完整的歌曲信息
                 const category = songsData.categories.find(c => c.name === song.category);
                 if (!category) return;
                 
@@ -1354,7 +1974,6 @@
                 
                 const songElement = document.createElement('div');
                 songElement.className = 'song-item';
-                    //<div class="song-number">${index + 1}</div>
                 songElement.innerHTML = `
                     <div class="song-category">${song.category} ${song.id}</div>
                     <div class="song-title">${song.title}</div>
@@ -1365,6 +1984,9 @@
 
             mainView.style.display = 'none';
             weeklyView.style.display = 'block';
+            
+            // 隐藏历史按钮
+            historyButton.style.display = 'none';
         }
 
         // 显示乐谱
@@ -1379,7 +2001,12 @@
                 currentState.openedFrom = 'category';
             } else if (searchResults.classList.contains('show')) {
                 currentState.openedFrom = 'search';
+            } else if (historyPanel.classList.contains('show')) {
+                currentState.openedFrom = 'history';
             }
+            
+            // 添加到最近查看记录
+            storageManager.addToRecentlyViewed(song, categoryName);
             
             currentState.currentCategory = categoryName;
             currentState.currentSong = song;
@@ -1397,10 +2024,21 @@
             loadImage(currentState.currentPage);
             updatePageIndicator();
             renderVersionButtons();
+            
+            // 检查是否已收藏并更新收藏按钮状态
+            if (storageManager.isFavorite(song.id, categoryName)) {
+                favoriteButton.classList.add('active');
+            } else {
+                favoriteButton.classList.remove('active');
+            }
 
             categoryView.style.display = 'none';
             weeklyView.style.display = 'none';
             viewerView.style.display = 'flex';
+            
+            // 无论从哪个界面打开，在查看乐谱时都隐藏历史按钮
+            historyButton.style.display = 'none';
+            
             // 滚动到顶部
             document.querySelector('.viewer-content').scrollTop = 0;
             
@@ -1511,8 +2149,12 @@
             // 添加一个状态标记来记录是从哪个界面打开的查看器
             if (currentState.openedFrom === 'weekly') {
                 weeklyView.style.display = 'block';
+                // 周歌曲界面不显示历史按钮
+                historyButton.style.display = 'none';
             } else if (currentState.openedFrom === 'category') {
                 categoryView.style.display = 'block';
+                // 分类界面不显示历史按钮
+                historyButton.style.display = 'none';
             } else if (currentState.openedFrom === 'search') {
                 // 从搜索结果回来，保持搜索结果显示
                 searchResults.classList.add('show');
@@ -1526,9 +2168,23 @@
                 if (searchInput.value.trim() === '' && currentState.lastSearchQuery) {
                     searchInput.value = currentState.lastSearchQuery;
                 }
+                
+                // 搜索结果界面不显示历史按钮
+                historyButton.style.display = 'none';
+            } else if (currentState.openedFrom === 'history') {
+                // 从历史/收藏面板回来，返回主界面
+                mainView.style.display = 'block';
+                // 主界面显示历史按钮
+                historyButton.style.display = 'flex';
             } else {
                 mainView.style.display = 'block';
+                // 主界面显示历史按钮
+                historyButton.style.display = 'flex';
             }
+            
+            // 更新最近查看和收藏列表
+            renderRecentlyViewed();
+            renderFavorites();
             
             // 清除打开来源标记
             currentState.openedFrom = null;
@@ -1541,12 +2197,16 @@
             backButton.addEventListener('click', () => {
                 categoryView.style.display = 'none';
                 mainView.style.display = 'block';
+                // 返回主界面时显示历史按钮
+                historyButton.style.display = 'flex';
             });
             
             // 本周歌曲返回按钮
             backButtonWeekly.addEventListener('click', () => {
                 weeklyView.style.display = 'none';
                 mainView.style.display = 'block';
+                // 返回主界面时显示历史按钮
+                historyButton.style.display = 'flex';
             });
 
             // 关闭查看器按钮
@@ -1605,12 +2265,16 @@
                     // 如果在分类视图，返回主视图
                     categoryView.style.display = 'none';
                     mainView.style.display = 'block';
+                    // 返回主界面时显示历史按钮
+                    historyButton.style.display = 'flex';
                     history.pushState(null, null, document.URL);
                     event.preventDefault();
                 } else if (weeklyView.style.display === 'block') {
                     // 如果在本周歌曲视图，返回主视图
                     weeklyView.style.display = 'none';
                     mainView.style.display = 'block';
+                    // 返回主界面时显示历史按钮
+                    historyButton.style.display = 'flex';
                     history.pushState(null, null, document.URL);
                     event.preventDefault();
                 } else if (currentState.isSearchActive && searchResults.classList.contains('show')) {
@@ -1701,6 +2365,9 @@
                 currentState.isSearchActive = false;
                 clearSearchButton.classList.remove('visible');
                 
+                // 在主界面显示历史/收藏按钮
+                historyButton.style.display = 'flex';
+                
                 // 清除后让搜索框重新获得焦点
                 searchInput.focus();
             });
@@ -1710,6 +2377,74 @@
                 if (searchInput.value.trim() !== '') {
                     clearSearchButton.classList.add('visible');
                 }
+            });
+
+            // 清空最近查看按钮
+            clearRecentlyViewed.addEventListener('click', () => {
+                if (confirm('确定要清空最近查看记录吗？')) {
+                    storageManager.clearRecentlyViewed();
+                    renderRecentlyViewed();
+                }
+            });
+            
+            // 收藏按钮点击事件
+            favoriteButton.addEventListener('click', (e) => {
+                e.stopPropagation(); // 防止事件冒泡
+                
+                if (!currentState.currentSong) return;
+                
+                const isFavorited = storageManager.toggleFavorite(
+                    currentState.currentSong, 
+                    currentState.currentCategory
+                );
+                
+                // 更新按钮样式
+                if (isFavorited) {
+                    favoriteButton.classList.add('active');
+                } else {
+                    favoriteButton.classList.remove('active');
+                }
+                
+                // 更新收藏列表（如果面板是打开的）
+                if (historyPanel.classList.contains('show')) {
+                    renderFavorites();
+                }
+            });
+            
+            // 历史面板相关事件
+            historyButton.addEventListener('click', () => {
+                historyPanel.classList.add('show');
+                // 刷新数据
+                renderRecentlyViewed();
+                renderFavorites();
+            });
+            
+            historyPanelClose.addEventListener('click', () => {
+                historyPanel.classList.remove('show');
+            });
+            
+            // 点击面板外部关闭面板
+            document.addEventListener('click', (e) => {
+                if (historyPanel.classList.contains('show') && 
+                    !historyPanel.contains(e.target) && 
+                    !historyButton.contains(e.target)) {
+                    historyPanel.classList.remove('show');
+                }
+            });
+            
+            // 标签切换
+            recentTab.addEventListener('click', () => {
+                recentTab.classList.add('active');
+                favoritesTab.classList.remove('active');
+                recentPanel.classList.add('active');
+                favoritesPanel.classList.remove('active');
+            });
+            
+            favoritesTab.addEventListener('click', () => {
+                favoritesTab.classList.add('active');
+                recentTab.classList.remove('active');
+                favoritesPanel.classList.add('active');
+                recentPanel.classList.remove('active');
             });
         }
 
@@ -1723,6 +2458,16 @@
                     clearSearchButton.classList.add('visible');
                 } else {
                     clearSearchButton.classList.remove('visible');
+                    
+                    // 当搜索框内容为空时，隐藏搜索结果并显示主界面内容
+                    searchResults.classList.remove('show');
+                    categoriesContainer.style.display = '';
+                    weeklyButton.style.display = '';
+                    versionPreferenceContainer.style.display = '';
+                    currentState.isSearchActive = false;
+                    
+                    // 显示历史/收藏按钮
+                    historyButton.style.display = 'flex';
                 }
             });
             
@@ -1757,6 +2502,9 @@
                         weeklyButton.style.display = '';
                         versionPreferenceContainer.style.display = '';
                         currentState.isSearchActive = false;
+                        
+                        // 在主界面显示历史/收藏按钮
+                        historyButton.style.display = 'flex';
                     }, 200);
                 }
             });
@@ -1771,6 +2519,12 @@
                     versionPreferenceContainer.style.display = '';
                     searchInput.blur();
                     currentState.isSearchActive = false;
+                    
+                    // 在主界面显示历史/收藏按钮
+                    historyButton.style.display = 'flex';
+                    
+                    // 隐藏清除按钮
+                    clearSearchButton.classList.remove('visible');
                 }
             });
         }
@@ -1837,6 +2591,9 @@
             categoriesContainer.style.display = 'none';
             weeklyButton.style.display = 'none';
             versionPreferenceContainer.style.display = 'none';
+            
+            // 隐藏历史/收藏按钮
+            historyButton.style.display = 'none';
         }
         
         // 防抖函数
@@ -1846,6 +2603,125 @@
                 clearTimeout(timeout);
                 timeout = setTimeout(() => func.apply(this, args), wait);
             };
+        }
+
+        // 渲染最近查看列表
+        function renderRecentlyViewed() {
+            const recentData = storageManager.getRecentlyViewed();
+            
+            // 如果没有最近查看记录，显示空消息
+            if (recentData.items.length === 0) {
+                recentlyViewedList.innerHTML = '<div class="empty-list-message">暂无记录</div>';
+                return;
+            }
+            
+            recentlyViewedList.innerHTML = '';
+            
+            // 添加最近查看的歌曲
+            recentData.items.forEach((item) => {
+                const songElement = document.createElement('div');
+                songElement.className = 'song-item';
+                songElement.innerHTML = `
+                    <div class="song-category">${item.category} ${item.id}</div>
+                    <div class="song-title">${item.title}</div>
+                `;
+                
+                // 添加点击事件
+                songElement.addEventListener('click', () => {
+                    // 查找完整的歌曲信息
+                    const category = songsData.categories.find(c => c.name === item.category);
+                    if (!category) return;
+                    
+                    const song = category.songs.find(s => s.id === item.id);
+                    if (!song) return;
+                    
+                    showSong(item.category, song);
+                    // 关闭面板
+                    historyPanel.classList.remove('show');
+                });
+                
+                recentlyViewedList.appendChild(songElement);
+            });
+        }
+
+        // 渲染收藏列表
+        function renderFavorites() {
+            const favoritesData = storageManager.getFavorites();
+            
+            // 如果没有收藏，显示空消息
+            if (favoritesData.items.length === 0) {
+                favoritesList.innerHTML = '<div class="empty-list-message">暂无收藏</div>';
+                return;
+            }
+            
+            favoritesList.innerHTML = '';
+            
+            // 添加收藏的歌曲
+            favoritesData.items.forEach((item) => {
+                const songElement = document.createElement('div');
+                songElement.className = 'song-item favorite-item';
+                
+                // 创建歌曲信息容器
+                const songInfo = document.createElement('div');
+                songInfo.className = 'song-info';
+                songInfo.innerHTML = `
+                    <div class="song-category">${item.category} ${item.id}</div>
+                    <div class="song-title">${item.title}</div>
+                `;
+                
+                // 添加点击事件到歌曲信息
+                songInfo.addEventListener('click', () => {
+                    // 查找完整的歌曲信息
+                    const category = songsData.categories.find(c => c.name === item.category);
+                    if (!category) return;
+                    
+                    const song = category.songs.find(s => s.id === item.id);
+                    if (!song) return;
+                    
+                    showSong(item.category, song);
+                    // 关闭面板
+                    historyPanel.classList.remove('show');
+                });
+                
+                // 创建取消收藏按钮
+                const unfavoriteButton = document.createElement('button');
+                unfavoriteButton.className = 'unfavorite-button';
+                unfavoriteButton.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
+                    </svg>
+                `;
+                
+                // 添加取消收藏点击事件
+                unfavoriteButton.addEventListener('click', (e) => {
+                    e.stopPropagation(); // 防止冒泡到歌曲点击
+                    
+                    // 查找完整的歌曲信息
+                    const category = songsData.categories.find(c => c.name === item.category);
+                    if (!category) return;
+                    
+                    const song = category.songs.find(s => s.id === item.id);
+                    if (!song) return;
+                    
+                    // 移除收藏
+                    storageManager.toggleFavorite(song, item.category);
+                    
+                    // 刷新收藏列表
+                    renderFavorites();
+                    
+                    // 如果当前正在查看这首歌，更新收藏按钮状态
+                    if (currentState.currentSong && 
+                        currentState.currentSong.id === song.id && 
+                        currentState.currentCategory === item.category) {
+                        favoriteButton.classList.remove('active');
+                    }
+                });
+                
+                // 组装元素
+                songElement.appendChild(songInfo);
+                songElement.appendChild(unfavoriteButton);
+                favoritesList.appendChild(songElement);
+            });
         }
 
         // 启动应用
