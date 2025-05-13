@@ -562,7 +562,7 @@
             }
         }
         
-        /* 最近查看和临时收藏区域样式 */
+        /* 最近查看和收藏区域样式 */
         .section-title {
             text-align: center;
             color: #8c6a4d;
@@ -601,8 +601,7 @@
             text-decoration: underline;
         }
         
-        .recently-viewed-container,
-        .temp-favorites-container {
+        .recently-viewed-container {
             margin-bottom: 20px;
         }
         
@@ -1829,29 +1828,7 @@
                     }));
                 }
                 
-                // 兼容旧版本：将临时收藏迁移到收藏
-                const oldKey = 'fhj_temp_favorites';
-                if (localStorage.getItem(oldKey)) {
-                    try {
-                        const oldData = JSON.parse(localStorage.getItem(oldKey));
-                        if (oldData && oldData.items && oldData.items.length > 0) {
-                            const favoritesData = this.getFavorites();
-                            // 合并数据，避免重复
-                            oldData.items.forEach(item => {
-                                if (!favoritesData.items.some(
-                                    f => f.id === item.id && f.category === item.category
-                                )) {
-                                    favoritesData.items.push(item);
-                                }
-                            });
-                            localStorage.setItem(this.keys.favorites, JSON.stringify(favoritesData));
-                        }
-                        // 删除旧数据
-                        localStorage.removeItem(oldKey);
-                    } catch (e) {
-                        console.error('迁移旧收藏数据失败', e);
-                    }
-                }
+                // 旧代码已移除 - 不再需要临时收藏迁移逻辑
             },
             
             // 获取最近查看记录
