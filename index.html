@@ -2727,9 +2727,8 @@
                 currentState.isSearchActive = false;
                 clearSearchButton.classList.remove('visible');
                 
-                // 在主界面显示历史/收藏按钮和语言切换按钮
+                // 在主界面显示历史/收藏按钮
                 historyButton.style.display = 'flex';
-                document.getElementById('languageButton').style.display = 'flex';
                 
                 // 移除搜索激活标志
                 document.body.classList.remove('search-active');
@@ -2879,12 +2878,8 @@
                         versionPreferenceContainer.style.display = '';
                         currentState.isSearchActive = false;
                         
-                        // 在主界面显示历史/收藏按钮和语言切换按钮
+                        // 在主界面显示历史/收藏按钮
                         historyButton.style.display = 'flex';
-                        document.getElementById('languageButton').style.display = 'flex';
-                        
-                        // 移除搜索激活标志
-                        document.body.classList.remove('search-active');
                     }, 200);
                 }
             });
