@@ -3742,27 +3742,43 @@
             const ctx = doodlePreviewCanvas.getContext('2d');
             ctx.clearRect(0, 0, doodlePreviewCanvas.width, doodlePreviewCanvas.height);
             if (!isDoodleMode) return;
-            let r = isEraser ? 10 : doodleLineWidth/2;
-            if (isEraser) r = 20/2;
+
             ctx.save();
-            ctx.beginPath();
-            ctx.arc(x, y, r, 0, 2 * Math.PI);
+            ctx.translate(x, y);
+            ctx.rotate(Math.PI / 4); // 45度
+
             if (isEraser) {
-                ctx.globalAlpha = 0.5;
+                // 橡皮擦：白色椭圆，灰色边框
+                ctx.globalAlpha = 0.7;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 14, 6, 0, 0, 2 * Math.PI); // 长轴14，短轴6
                 ctx.fillStyle = '#fff';
-                ctx.strokeStyle = '#888';
-                ctx.lineWidth = 2;
                 ctx.fill();
-                ctx.globalAlpha = 1;
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#888';
+                ctx.stroke();
+                // 画出橡皮擦的"斜切面"效果
+                ctx.globalAlpha = 0.3;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 14, 6, 0, Math.PI * 0.1, Math.PI * 0.9);
+                ctx.strokeStyle = '#bbb';
                 ctx.stroke();
             } else {
-                ctx.globalAlpha = 0.4;
+                // 画笔：红色椭圆，深色边框
+                ctx.globalAlpha = 0.5;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 10, 4, 0, 0, 2 * Math.PI); // 长轴10，短轴4
                 ctx.fillStyle = '#d32f2f';
-                ctx.strokeStyle = '#d32f2f';
-                ctx.lineWidth = 1;
                 ctx.fill();
-                ctx.globalAlpha = 1;
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#a31515';
                 ctx.stroke();
+                // 画出笔尖的"高光"
+                ctx.globalAlpha = 0.2;
+                ctx.beginPath();
+                ctx.ellipse(-2, -1, 3, 1.2, 0, 0, 2 * Math.PI);
+                ctx.fillStyle = '#fff';
+                ctx.fill();
             }
             ctx.restore();
         }
