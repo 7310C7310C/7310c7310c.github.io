@@ -1821,7 +1821,7 @@
     
     // 本周歌曲数据
     "weeklySongs": {
-        "updateDate": "2025/05/11",
+        "updateDate": "2025/05/18",
         "songs": [
             {
                 "category": "进堂咏",
@@ -1855,18 +1855,13 @@
             },
             {
                 "category": "领主咏",
-                "id": "001",
-                "title": "主，我在这里"
-            },
-            {
-                "category": "领主咏",
                 "id": "009",
                 "title": "上主是我的光明，我的救援"
             },
             {
                 "category": "礼成咏",
-                "id": "004",
-                "title": "圣母颂"
+                "id": "011",
+                "title": "耶稣已经复活"
             }
         ]
     }
@@ -2577,44 +2572,11 @@
                 imagePath = `img/${currentState.currentCategory}/${currentState.currentSong.filename}_${currentState.currentVersion}_${page}.jpeg`;
             }
             
-<<<<<<< HEAD
-            // 尝试加载图片
-            tryLoadImage(
-                basePath,
-                // 成功回调
-                (imagePath) => {
-                    sheetImage.onload = function() {
-                        loadingOverlay.style.display = 'none';
-                        loadingIndicator.style.display = 'none';
-                    };
-                    sheetImage.onerror = function() {
-                        loadingOverlay.style.display = 'none';
-                        loadingIndicator.style.display = 'none';
-                        console.error('无法加载图片');
-                    };
-                    // 先清空src，强制重新加载
-                    sheetImage.src = '';
-                    // 设置新src
-                    sheetImage.src = imagePath;
-                    // 如果图片已缓存，onload不会触发，需要手动处理
-                    if (sheetImage.complete) {
-                        sheetImage.onload();
-                    }
-                },
-                // 错误回调
-                () => {
-                    loadingOverlay.style.display = 'none';
-                    loadingIndicator.style.display = 'none';
-                    console.error('无法加载图片');
-                }
-            );
-=======
             // 图片加载完成时隐藏指示器
             sheetImage.onload = function() {
                 loadingOverlay.style.display = 'none';
                 loadingIndicator.style.display = 'none';
             };
->>>>>>> parent of 8c0301c (更新谱上主是我的光明，我的救援。)
             
             // 图片加载出错时也隐藏指示器
             sheetImage.onerror = function() {
