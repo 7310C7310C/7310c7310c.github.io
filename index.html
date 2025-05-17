@@ -1237,6 +1237,7 @@
             <button class="doodle-btn" id="doodleEnterBtn" style="margin-left:10px;">涂改</button>
             <button class="doodle-btn" id="doodleExitBtn" style="display:none;margin-left:10px;">退出涂改</button>
             <button class="doodle-btn" id="doodleClearBtn" style="display:none;margin-left:5px;">清除涂改</button>
+            <button class="doodle-btn" id="doodleEraserBtn" style="display:none;margin-left:5px;">橡皮擦</button>
             
             <!-- 页码控制 -->
             <div class="page-indicator-container">
@@ -3443,12 +3444,14 @@
         const doodleEnterBtn = document.getElementById('doodleEnterBtn');
         const doodleExitBtn = document.getElementById('doodleExitBtn');
         const doodleClearBtn = document.getElementById('doodleClearBtn');
+        const doodleEraserBtn = document.getElementById('doodleEraserBtn');
         let isDoodleMode = false;
         let isDrawing = false;
         let lastX = 0, lastY = 0;
         let doodleKey = '';
         let doodleColor = '#d32f2f'; // 红色
         let doodleLineWidth = 3;
+        let isEraser = false;
 
         // 同步canvas尺寸到图片
         function syncDoodleCanvasSize() {
@@ -3474,6 +3477,11 @@
             doodleEnterBtn.style.display = 'none';
             doodleExitBtn.style.display = 'inline-block';
             doodleClearBtn.style.display = 'inline-block';
+            doodleEraserBtn.style.display = 'inline-block';
+            isEraser = false;
+            doodleEraserBtn.classList.remove('active');
+            doodleEraserBtn.textContent = '橡皮擦';
+            setDoodleRelatedButtonsDisabled(true);
             // 进入涂改模式时加载本地涂鸦
             loadDoodleFromStorage();
         });
@@ -3483,6 +3491,11 @@
             doodleEnterBtn.style.display = 'inline-block';
             doodleExitBtn.style.display = 'none';
             doodleClearBtn.style.display = 'none';
+            doodleEraserBtn.style.display = 'none';
+            isEraser = false;
+            doodleEraserBtn.classList.remove('active');
+            doodleEraserBtn.textContent = '橡皮擦';
+            setDoodleRelatedButtonsDisabled(false);
             // 退出时保存涂鸦
             saveDoodleToStorage();
         });
@@ -3492,6 +3505,39 @@
             // 清除本地保存
             clearDoodleStorage();
         });
+        // 橡皮擦按钮逻辑
+        doodleEraserBtn.addEventListener('click', () => {
+            isEraser = !isEraser;
+            if (isEraser) {
+                doodleEraserBtn.classList.add('active');
+                doodleEraserBtn.textContent = '画笔';
+            } else {
+                doodleEraserBtn.classList.remove('active');
+                doodleEraserBtn.textContent = '橡皮擦';
+            }
+        });
+        // 设置涂改时禁用/恢复无关按钮
+        function setDoodleRelatedButtonsDisabled(disabled) {
+            // 关闭按钮
+            closeViewerButton.disabled = disabled;
+            closeViewerButton.style.opacity = disabled ? '0.4' : '';
+            // 翻页
+            prevPageButton.style.pointerEvents = disabled ? 'none' : '';
+            nextPageButton.style.pointerEvents = disabled ? 'none' : '';
+            prevPageButton.style.opacity = disabled ? '0.3' : (currentState.currentPage > 1 ? '0.7' : '0.3');
+            nextPageButton.style.opacity = disabled ? '0.3' : (currentState.currentPage < currentState.totalPages ? '0.7' : '0.3');
+            // 歌曲导航
+            prevSongButton.style.pointerEvents = disabled ? 'none' : '';
+            nextSongButton.style.pointerEvents = disabled ? 'none' : '';
+            prevSongButton.style.opacity = disabled ? '0.3' : (prevSongButton.classList.contains('disabled') ? '0.3' : '0.7');
+            nextSongButton.style.opacity = disabled ? '0.3' : (nextSongButton.classList.contains('disabled') ? '0.3' : '0.7');
+            // 版本切换
+            versionToggleButton.disabled = disabled;
+            versionToggleButton.style.opacity = disabled ? '0.4' : '';
+            // 版本菜单
+            versionButtonsContainer.style.pointerEvents = disabled ? 'none' : '';
+            versionButtonsContainer.style.opacity = disabled ? '0.4' : '';
+        }
         // 生成当前图片的唯一key
         function getDoodleKey() {
             if (!currentState.currentSong || !currentState.currentCategory) return '';
@@ -3560,14 +3606,31 @@
         doodleCanvas.addEventListener('mousedown', function(e) {
             if (!isDoodleMode) return;
             isDrawing = true;
+            const ctx = doodleCanvas.getContext('2d');
+            if (isEraser) {
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.strokeStyle = 'rgba(0,0,0,1)';
+                ctx.lineWidth = 20;
+            } else {
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.strokeStyle = doodleColor;
+                ctx.lineWidth = doodleLineWidth;
+            }
             const pos = getCanvasPos(e);
             lastX = pos.x; lastY = pos.y;
         });
         doodleCanvas.addEventListener('mousemove', function(e) {
             if (!isDoodleMode || !isDrawing) return;
             const ctx = doodleCanvas.getContext('2d');
-            ctx.strokeStyle = doodleColor;
-            ctx.lineWidth = doodleLineWidth;
+            if (isEraser) {
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.strokeStyle = 'rgba(0,0,0,1)';
+                ctx.lineWidth = 20;
+            } else {
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.strokeStyle = doodleColor;
+                ctx.lineWidth = doodleLineWidth;
+            }
             ctx.lineCap = 'round';
             ctx.beginPath();
             ctx.moveTo(lastX, lastY);
@@ -3588,6 +3651,16 @@
         doodleCanvas.addEventListener('touchstart', function(e) {
             if (!isDoodleMode) return;
             isDrawing = true;
+            const ctx = doodleCanvas.getContext('2d');
+            if (isEraser) {
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.strokeStyle = 'rgba(0,0,0,1)';
+                ctx.lineWidth = 20;
+            } else {
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.strokeStyle = doodleColor;
+                ctx.lineWidth = doodleLineWidth;
+            }
             const pos = getCanvasPos(e);
             lastX = pos.x; lastY = pos.y;
             e.preventDefault();
@@ -3595,8 +3668,15 @@
         doodleCanvas.addEventListener('touchmove', function(e) {
             if (!isDoodleMode || !isDrawing) return;
             const ctx = doodleCanvas.getContext('2d');
-            ctx.strokeStyle = doodleColor;
-            ctx.lineWidth = doodleLineWidth;
+            if (isEraser) {
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.strokeStyle = 'rgba(0,0,0,1)';
+                ctx.lineWidth = 20;
+            } else {
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.strokeStyle = doodleColor;
+                ctx.lineWidth = doodleLineWidth;
+            }
             ctx.lineCap = 'round';
             ctx.beginPath();
             ctx.moveTo(lastX, lastY);
@@ -3616,6 +3696,35 @@
             isDrawing = false;
             e.preventDefault();
         }, {passive:false});
+        // 禁用方向键和点击乐谱外区域关闭
+        let doodleKeydownHandler = null;
+        let doodleViewerClickHandler = null;
+        function enableDoodleModeBlockers(enable) {
+            if (enable) {
+                // 禁用方向键
+                doodleKeydownHandler = function(e) {
+                    if (["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Escape"].includes(e.key)) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                    }
+                };
+                document.addEventListener('keydown', doodleKeydownHandler, true);
+                // 禁用点击乐谱外区域关闭
+                doodleViewerClickHandler = function(e) {
+                    if (e.target === viewerContent) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                    }
+                };
+                viewerContent.addEventListener('click', doodleViewerClickHandler, true);
+            } else {
+                if (doodleKeydownHandler) document.removeEventListener('keydown', doodleKeydownHandler, true);
+                if (doodleViewerClickHandler) viewerContent.removeEventListener('click', doodleViewerClickHandler, true);
+            }
+        }
+        // 在涂改按钮切换时调用
+        doodleEnterBtn.addEventListener('click', () => { enableDoodleModeBlockers(true); });
+        doodleExitBtn.addEventListener('click', () => { enableDoodleModeBlockers(false); });
     </script>
 </body>
 </html>
