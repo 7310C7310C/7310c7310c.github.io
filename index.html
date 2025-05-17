@@ -2594,9 +2594,6 @@
             
             // 先清除图片源
             sheetImage.src = '';
-            // 解绑之前的事件，防止多次绑定
-            sheetImage.onload = null;
-            sheetImage.onerror = null;
             
             let basePath;
             if (currentState.currentVersion === '原谱') {
@@ -2610,7 +2607,6 @@
                 basePath,
                 // 成功回调
                 (imagePath) => {
-                    // 重新绑定事件，确保每次都能正确响应
                     sheetImage.onload = function() {
                         loadingOverlay.style.display = 'none';
                         loadingIndicator.style.display = 'none';
@@ -2631,9 +2627,6 @@
                 },
                 // 错误回调
                 () => {
-                    // 解绑事件，防止残留
-                    sheetImage.onload = null;
-                    sheetImage.onerror = null;
                     loadingOverlay.style.display = 'none';
                     loadingIndicator.style.display = 'none';
                     console.error('无法加载图片');
