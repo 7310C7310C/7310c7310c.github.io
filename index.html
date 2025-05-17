@@ -2379,6 +2379,9 @@
             // 隐藏历史按钮和语言切换按钮
             historyButton.style.display = 'none';
             document.getElementById('languageButton').style.display = 'none';
+
+            // 新增：切换到分类界面时滚动到顶部
+            window.scrollTo(0, 0);
         }
 
         // 显示本周歌曲
