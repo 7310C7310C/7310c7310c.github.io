@@ -1213,6 +1213,7 @@
             <div class="sheet-container">
                 <img id="sheet-image" class="sheet-image" src="" alt="乐谱">
                 <canvas id="doodle-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;display:none;z-index:10;"></canvas>
+                <canvas id="doodle-preview-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:11;"></canvas>
             </div>
         </div>
         
@@ -3446,6 +3447,7 @@
         const doodleExitBtn = document.getElementById('doodleExitBtn');
         const doodleClearBtn = document.getElementById('doodleClearBtn');
         const doodleEraserBtn = document.getElementById('doodleEraserBtn');
+        const doodlePreviewCanvas = document.getElementById('doodle-preview-canvas');
         let isDoodleMode = false;
         let isDrawing = false;
         let lastX = 0, lastY = 0;
@@ -3463,6 +3465,12 @@
             doodleCanvas.style.height = sheetImage.height + 'px';
             doodleCanvas.style.display = 'block'; // 始终显示
             doodleCanvas.style.pointerEvents = isDoodleMode ? 'auto' : 'none';
+            // 预览canvas同步
+            doodlePreviewCanvas.width = sheetImage.naturalWidth;
+            doodlePreviewCanvas.height = sheetImage.naturalHeight;
+            doodlePreviewCanvas.style.width = sheetImage.width + 'px';
+            doodlePreviewCanvas.style.height = sheetImage.height + 'px';
+            doodlePreviewCanvas.style.display = isDoodleMode ? 'block' : 'none';
             // 重新加载本地涂鸦
             loadDoodleFromStorage();
         }
@@ -3482,6 +3490,7 @@
             isEraser = false;
             doodleEraserBtn.classList.remove('active');
             doodleEraserBtn.textContent = '橡皮擦';
+            doodlePreviewCanvas.style.display = 'block';
             setDoodleRelatedButtonsDisabled(true);
             // 进入涂改模式时加载本地涂鸦
             loadDoodleFromStorage();
@@ -3493,6 +3502,7 @@
             doodleExitBtn.style.display = 'none';
             doodleClearBtn.style.display = 'none';
             doodleEraserBtn.style.display = 'none';
+            doodlePreviewCanvas.style.display = 'none';
             isEraser = false;
             doodleEraserBtn.classList.remove('active');
             doodleEraserBtn.textContent = '橡皮擦';
@@ -3726,6 +3736,72 @@
         // 在涂改按钮切换时调用
         doodleEnterBtn.addEventListener('click', () => { enableDoodleModeBlockers(true); });
         doodleExitBtn.addEventListener('click', () => { enableDoodleModeBlockers(false); });
+
+        // 画笔/橡皮擦预览
+        function drawDoodlePreview(x, y) {
+            const ctx = doodlePreviewCanvas.getContext('2d');
+            ctx.clearRect(0, 0, doodlePreviewCanvas.width, doodlePreviewCanvas.height);
+            if (!isDoodleMode) return;
+            let r = isEraser ? 10 : doodleLineWidth/2;
+            if (isEraser) r = 20/2;
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, 2 * Math.PI);
+            if (isEraser) {
+                ctx.globalAlpha = 0.5;
+                ctx.fillStyle = '#fff';
+                ctx.strokeStyle = '#888';
+                ctx.lineWidth = 2;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+                ctx.stroke();
+            } else {
+                ctx.globalAlpha = 0.4;
+                ctx.fillStyle = '#d32f2f';
+                ctx.strokeStyle = '#d32f2f';
+                ctx.lineWidth = 1;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+        function clearDoodlePreview() {
+            const ctx = doodlePreviewCanvas.getContext('2d');
+            ctx.clearRect(0, 0, doodlePreviewCanvas.width, doodlePreviewCanvas.height);
+        }
+        // 鼠标预览
+        doodleCanvas.addEventListener('mousemove', function(e) {
+            if (!isDoodleMode) return;
+            const rect = doodleCanvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) * (doodleCanvas.width / rect.width);
+            const y = (e.clientY - rect.top) * (doodleCanvas.height / rect.height);
+            drawDoodlePreview(x, y);
+        });
+        doodleCanvas.addEventListener('mouseleave', function(e) {
+            clearDoodlePreview();
+        });
+        doodleCanvas.addEventListener('mouseenter', function(e) {
+            if (!isDoodleMode) return;
+            const rect = doodleCanvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) * (doodleCanvas.width / rect.width);
+            const y = (e.clientY - rect.top) * (doodleCanvas.height / rect.height);
+            drawDoodlePreview(x, y);
+        });
+        // 触摸预览
+        doodleCanvas.addEventListener('touchmove', function(e) {
+            if (!isDoodleMode) return;
+            const rect = doodleCanvas.getBoundingClientRect();
+            const x = (e.touches[0].clientX - rect.left) * (doodleCanvas.width / rect.width);
+            const y = (e.touches[0].clientY - rect.top) * (doodleCanvas.height / rect.height);
+            drawDoodlePreview(x, y);
+        }, {passive:false});
+        doodleCanvas.addEventListener('touchend', function(e) {
+            clearDoodlePreview();
+        }, {passive:false});
+        doodleCanvas.addEventListener('touchcancel', function(e) {
+            clearDoodlePreview();
+        }, {passive:false});
     </script>
 </body>
 </html>
