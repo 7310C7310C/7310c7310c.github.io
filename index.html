@@ -1821,7 +1821,7 @@
     
     // 本周歌曲数据
     "weeklySongs": {
-        "updateDate": "2025/05/18",
+        "updateDate": "2025/05/11",
         "songs": [
             {
                 "category": "进堂咏",
@@ -1855,13 +1855,18 @@
             },
             {
                 "category": "领主咏",
+                "id": "001",
+                "title": "主，我在这里"
+            },
+            {
+                "category": "领主咏",
                 "id": "009",
                 "title": "上主是我的光明，我的救援"
             },
             {
                 "category": "礼成咏",
-                "id": "011",
-                "title": "耶稣已经复活"
+                "id": "004",
+                "title": "圣母颂"
             }
         ]
     }
@@ -2556,36 +2561,6 @@
             history.pushState({viewingSheet: true}, null);
         }
 
-        // 尝试加载不同格式的图片
-        function tryLoadImage(basePath, onSuccess, onError) {
-            const formats = ['jpeg', 'jpg', 'png', 'gif'];
-            let currentFormatIndex = 0;
-            
-            function tryNextFormat() {
-                if (currentFormatIndex >= formats.length) {
-                    onError();
-                    return;
-                }
-                
-                const format = formats[currentFormatIndex];
-                const imagePath = `${basePath}.${format}`;
-                const testImage = new Image();
-                
-                testImage.onload = function() {
-                    onSuccess(imagePath);
-                };
-                
-                testImage.onerror = function() {
-                    currentFormatIndex++;
-                    tryNextFormat();
-                };
-                
-                testImage.src = imagePath;
-            }
-            
-            tryNextFormat();
-        }
-
         // 加载乐谱图片
         function loadImage(page) {
             // 显示加载指示器
@@ -2595,13 +2570,14 @@
             // 先清除图片源
             sheetImage.src = '';
             
-            let basePath;
+            let imagePath;
             if (currentState.currentVersion === '原谱') {
-                basePath = `img/${currentState.currentCategory}/${currentState.currentSong.filename}_${page}`;
+                imagePath = `img/${currentState.currentCategory}/${currentState.currentSong.filename}_${page}.jpeg`;
             } else {
-                basePath = `img/${currentState.currentCategory}/${currentState.currentSong.filename}_${currentState.currentVersion}_${page}`;
+                imagePath = `img/${currentState.currentCategory}/${currentState.currentSong.filename}_${currentState.currentVersion}_${page}.jpeg`;
             }
             
+<<<<<<< HEAD
             // 尝试加载图片
             tryLoadImage(
                 basePath,
@@ -2632,28 +2608,39 @@
                     console.error('无法加载图片');
                 }
             );
+=======
+            // 图片加载完成时隐藏指示器
+            sheetImage.onload = function() {
+                loadingOverlay.style.display = 'none';
+                loadingIndicator.style.display = 'none';
+            };
+>>>>>>> parent of 8c0301c (更新谱上主是我的光明，我的救援。)
             
-            // 预加载相邻页面
+            // 图片加载出错时也隐藏指示器
+            sheetImage.onerror = function() {
+                loadingOverlay.style.display = 'none';
+                loadingIndicator.style.display = 'none';
+                // 可以在这里添加错误处理，比如显示一个错误消息
+            };
+            
+            sheetImage.src = imagePath;
+            
+            // 预加载相邻页面（保持原有逻辑）
             if (page < currentState.totalPages) {
-                const nextBasePath = currentState.currentVersion === '原谱' 
-                    ? `img/${currentState.currentCategory}/${currentState.currentSong.filename}_${page + 1}`
-                    : `img/${currentState.currentCategory}/${currentState.currentSong.filename}_${currentState.currentVersion}_${page + 1}`;
-                
-                tryLoadImage(nextBasePath, (imagePath) => {
-                    const nextImage = new Image();
-                    nextImage.src = imagePath;
-                }, () => {});
+                const nextImage = new Image();
+                if (currentState.currentVersion === '原谱') {
+                    nextImage.src = `img/${currentState.currentCategory}/${currentState.currentSong.filename}_${page + 1}.jpeg`;
+                } else {
+                    nextImage.src = `img/${currentState.currentCategory}/${currentState.currentSong.filename}_${currentState.currentVersion}_${page + 1}.jpeg`;
+                }
             }
-            
             if (page > 1) {
-                const prevBasePath = currentState.currentVersion === '原谱'
-                    ? `img/${currentState.currentCategory}/${currentState.currentSong.filename}_${page - 1}`
-                    : `img/${currentState.currentCategory}/${currentState.currentSong.filename}_${currentState.currentVersion}_${page - 1}`;
-                
-                tryLoadImage(prevBasePath, (imagePath) => {
-                    const prevImage = new Image();
-                    prevImage.src = imagePath;
-                }, () => {});
+                const prevImage = new Image();
+                if (currentState.currentVersion === '原谱') {
+                    prevImage.src = `img/${currentState.currentCategory}/${currentState.currentSong.filename}_${page - 1}.jpeg`;
+                } else {
+                    prevImage.src = `img/${currentState.currentCategory}/${currentState.currentSong.filename}_${currentState.currentVersion}_${page - 1}.jpeg`;
+                }
             }
         }
 
