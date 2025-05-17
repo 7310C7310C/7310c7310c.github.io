@@ -396,7 +396,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            margin: 10px 0 18px 0;
+            margin: 30px 0 30px 0;
             gap: 8px;
             background: #ede5db;
             border-radius: 18px;
@@ -1035,6 +1035,13 @@
         .favorites-container {
             margin-bottom: 20px;
         }
+
+        #weeklyButton .update-date {
+            font-size: 0.9rem;
+            color: #8c6a4d;
+            margin-top: 5px;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -1071,6 +1078,7 @@
         
         <button class="category-card" id="weeklyButton">
             <h2 style="margin: 0;">本周歌曲</h2>
+            <div class="update-date" id="weeklyButtonDate"></div>
         </button>
         
         <div class="categories-list" id="categoriesContainer">
@@ -2105,6 +2113,10 @@
             
             loadingOverlay.style.display = 'none';
             loadingIndicator.style.display = 'none';
+            
+            // 更新首页本周歌曲按钮的日期
+            document.getElementById('weeklyButtonDate').textContent = 
+                `${t('updateDate')}${songsData.weeklySongs.updateDate}`;
         }
 
         // 初始化语言设置
