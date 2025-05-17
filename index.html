@@ -1329,7 +1329,16 @@
                 },
                 
                 // 歌曲数量文本
-                'songsCount': '首歌曲'
+                'songsCount': '首歌曲',
+                
+                // 涂改相关按钮
+                'doodle': '涂改',
+                'doodleSave': '保存涂改',
+                'doodleClear': '清空涂改',
+                'eraser': '橡皮擦',
+                'pen': '画笔',
+                'penMode': '画笔模式',
+                'eraserMode': '橡皮擦模式',
             },
             'en': {
                 // 标题和导航
@@ -1384,7 +1393,16 @@
                 },
                 
                 // 歌曲数量文本
-                'songsCount': 'songs'
+                'songsCount': 'songs',
+                
+                // 涂改相关按钮
+                'doodle': 'Doodle',
+                'doodleSave': 'Save',
+                'doodleClear': 'Clear',
+                'eraser': 'Eraser',
+                'pen': 'Pen',
+                'penMode': 'Pen Mode',
+                'eraserMode': 'Eraser Mode',
             }
         };
         
@@ -2311,6 +2329,12 @@
             
             // 更新首页本周歌曲按钮的日期
             document.getElementById('weeklyButtonDate').textContent = `${t('updateDate')}${songsData.weeklySongs.updateDate}`;
+            
+            // 涂改相关按钮
+            if (doodleEnterBtn) doodleEnterBtn.textContent = t('doodle');
+            if (doodleExitBtn) doodleExitBtn.textContent = t('doodleSave');
+            if (doodleClearBtn) doodleClearBtn.textContent = t('doodleClear');
+            if (doodleEraserBtn) doodleEraserBtn.textContent = isEraser ? t('pen') : t('eraser');
         }
         
         // 更新分类名称（在列表中和显示歌曲时）
@@ -3512,7 +3536,7 @@
             updateUndoRedoButtons();
             isEraser = false;
             doodleEraserBtn.classList.remove('active');
-            doodleEraserBtn.textContent = '橡皮擦';
+            doodleEraserBtn.textContent = t('eraser');
             doodlePreviewCanvas.style.display = 'block';
             setDoodleRelatedButtonsDisabled(true);
             // 进入涂改模式时加载本地涂鸦
@@ -3520,6 +3544,7 @@
             // 禁用收藏按钮
             favoriteButton.disabled = true;
             favoriteButton.style.opacity = '0.4';
+            showToast(t('penMode')); // 新增toast
         });
         doodleExitBtn.addEventListener('click', () => {
             isDoodleMode = false;
@@ -3533,7 +3558,7 @@
             doodlePreviewCanvas.style.display = 'none';
             isEraser = false;
             doodleEraserBtn.classList.remove('active');
-            doodleEraserBtn.textContent = '橡皮擦';
+            doodleEraserBtn.textContent = t('eraser');
             setDoodleRelatedButtonsDisabled(false);
             // 退出时保存涂鸦
             saveDoodleToStorage();
@@ -3557,10 +3582,12 @@
             isEraser = !isEraser;
             if (isEraser) {
                 doodleEraserBtn.classList.add('active');
-                doodleEraserBtn.textContent = '画笔';
+                doodleEraserBtn.textContent = t('pen');
+                showToast(t('eraserMode')); // 新增toast
             } else {
                 doodleEraserBtn.classList.remove('active');
-                doodleEraserBtn.textContent = '橡皮擦';
+                doodleEraserBtn.textContent = t('eraser');
+                showToast(t('penMode')); // 新增toast
             }
         });
         // 设置涂改时禁用/恢复无关按钮
