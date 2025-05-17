@@ -2607,9 +2607,16 @@
                 basePath,
                 // 成功回调
                 (imagePath) => {
+                    sheetImage.onload = function() {
+                        loadingOverlay.style.display = 'none';
+                        loadingIndicator.style.display = 'none';
+                    };
+                    sheetImage.onerror = function() {
+                        loadingOverlay.style.display = 'none';
+                        loadingIndicator.style.display = 'none';
+                        console.error('无法加载图片');
+                    };
                     sheetImage.src = imagePath;
-                    loadingOverlay.style.display = 'none';
-                    loadingIndicator.style.display = 'none';
                 },
                 // 错误回调
                 () => {
