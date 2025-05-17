@@ -1042,9 +1042,50 @@
             margin-top: 5px;
             font-style: italic;
         }
+
+        /* Toast 样式 */
+        .toast-container {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none;
+        }
+        .toast-message {
+            background: rgba(140,106,77,0.97);
+            color: #fff;
+            padding: 12px 28px;
+            border-radius: 24px;
+            margin-top: 10px;
+            font-size: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+            opacity: 0;
+            animation: toast-in 0.3s forwards, toast-out 0.3s 1.7s forwards;
+            pointer-events: auto;
+        }
+        @keyframes toast-in {
+            from { opacity: 0; transform: translateY(-20px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes toast-out {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        /* 搜索高亮样式 */
+        .search-highlight {
+            background: #ffe08a;
+            color: #8c6a4d;
+            border-radius: 3px;
+            padding: 0 2px;
+        }
     </style>
 </head>
 <body>
+    <div class="toast-container" id="toastContainer"></div>
     <!-- 主界面 -->
     <div id="main-view" class="container">
         <h1 class="main-title">复活计划乐队</h1>
@@ -2995,27 +3036,26 @@
                 if (confirm(t('confirmClearHistory'))) {
                     storageManager.clearRecentlyViewed();
                     renderRecentlyViewed();
+                    showToast(currentLanguage === 'zh' ? '已清空最近查看' : 'Recently viewed cleared');
                 }
             });
             
             // 收藏按钮点击事件
             favoriteButton.addEventListener('click', (e) => {
                 e.stopPropagation(); // 防止事件冒泡
-                
                 if (!currentState.currentSong) return;
-                
                 const isFavorited = storageManager.toggleFavorite(
                     currentState.currentSong, 
                     currentState.currentCategory
                 );
-                
                 // 更新按钮样式
                 if (isFavorited) {
                     favoriteButton.classList.add('active');
+                    showToast(currentLanguage === 'zh' ? '已添加到收藏' : 'Added to favorites');
                 } else {
                     favoriteButton.classList.remove('active');
+                    showToast(currentLanguage === 'zh' ? '已取消收藏' : 'Removed from favorites');
                 }
-                
                 // 更新收藏列表（如果面板是打开的）
                 if (historyPanel.classList.contains('show')) {
                     renderFavorites();
@@ -3167,19 +3207,14 @@
                 weeklyButton.style.display = '';
                 versionPreferenceContainer.style.display = '';
                 currentState.isSearchActive = false;
-                
                 // 隐藏历史/收藏按钮
                 historyButton.style.display = 'flex';
-                
                 // 移除搜索激活标志
                 document.body.classList.remove('search-active');
-                
                 return;
             }
-            
             currentState.isSearchActive = true;
             currentState.lastSearchQuery = query;
-            
             // 收集所有歌曲
             const allSongs = [];
             songsData.categories.forEach(category => {
@@ -3191,7 +3226,6 @@
                     });
                 });
             });
-            
             // 过滤匹配的歌曲
             const matchedSongs = allSongs.filter(song => 
                 song.title.toLowerCase().includes(query) || 
@@ -3199,19 +3233,24 @@
                 song.category.toLowerCase().includes(query) || 
                 (currentLanguage === 'en' && t(song.category, 'categories').toLowerCase().includes(query))
             );
-            
+            // 高亮函数
+            function highlight(text) {
+                if (!query) return text;
+                // 支持中英文关键词高亮
+                const reg = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                return text.replace(reg, '<span class="search-highlight">$1</span>');
+            }
             // 显示搜索结果
             searchResultsList.innerHTML = '';
             if (matchedSongs.length > 0) {
                 // 存储当前歌曲列表，用于导航
                 currentState.currentSongList = matchedSongs;
-                
                 matchedSongs.forEach((song, index) => {
                     const songElement = document.createElement('div');
                     songElement.className = 'song-item';
                     songElement.innerHTML = `
-                        <div class="song-category">${t(song.category, 'categories')} ${song.id}</div>
-                        <div class="song-title">${song.title}</div>
+                        <div class="song-category">${highlight(t(song.category, 'categories') + ' ' + song.id)}</div>
+                        <div class="song-title">${highlight(song.title)}</div>
                     `;
                     songElement.addEventListener('click', () => {
                         showSong(song.category, song);
@@ -3225,16 +3264,13 @@
                 noResults.textContent = t('noMatchingSongs');
                 searchResultsList.appendChild(noResults);
             }
-            
             searchResults.classList.add('show');
             // 隐藏主界面内容
             categoriesContainer.style.display = 'none';
             weeklyButton.style.display = 'none';
             versionPreferenceContainer.style.display = 'none';
-            
             // 隐藏历史/收藏按钮
             historyButton.style.display = 'none';
-            
             // 添加搜索激活标志
             document.body.classList.add('search-active');
         }
@@ -3362,6 +3398,7 @@
                         currentState.currentCategory === item.category) {
                         favoriteButton.classList.remove('active');
                     }
+                    showToast(currentLanguage === 'zh' ? '已取消收藏' : 'Removed from favorites');
                 });
                 
                 // 组装元素
@@ -3373,6 +3410,19 @@
 
         // 启动应用
         document.addEventListener('DOMContentLoaded', initApp);
+
+        // Toast 显示函数
+        function showToast(message) {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = 'toast-message';
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.remove();
+            }, 2000);
+        }
     </script>
 </body>
 </html>
