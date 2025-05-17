@@ -2954,25 +2954,27 @@
             // 触摸滑动翻页
             let touchStartX = 0;
             let touchEndX = 0;
-            
+            let touchStartY = 0;
+            let touchEndY = 0;
             document.addEventListener('touchstart', (e) => {
                 touchStartX = e.changedTouches[0].screenX;
+                touchStartY = e.changedTouches[0].screenY;
             }, false);
-
             document.addEventListener('touchend', (e) => {
                 touchEndX = e.changedTouches[0].screenX;
+                touchEndY = e.changedTouches[0].screenY;
                 handleSwipe();
             }, false);
-
             function handleSwipe() {
                 if (!viewerView.style.display || viewerView.style.display === 'none') return;
-                
-                const threshold = 50; // 最小滑动距离
-                const diff = touchStartX - touchEndX;
-                
-                if (diff > threshold) {
+                const threshold = 50; // 最小横向滑动距离
+                const verticalLimit = 40; // 允许的最大纵向偏移
+                const diffX = touchStartX - touchEndX;
+                const diffY = Math.abs(touchStartY - touchEndY);
+                if (diffY > verticalLimit) return; // 纵向偏移大，不触发翻页
+                if (diffX > threshold) {
                     goToNextPage();
-                } else if (diff < -threshold) {
+                } else if (diffX < -threshold) {
                     goToPrevPage();
                 }
             }
