@@ -3509,18 +3509,32 @@
         // 同步canvas尺寸到图片
         function syncDoodleCanvasSize() {
             if (!sheetImage.complete || sheetImage.naturalWidth === 0) return;
-            doodleCanvas.width = sheetImage.naturalWidth;
-            doodleCanvas.height = sheetImage.naturalHeight;
+            // 最大分辨率
+            const MAX_CANVAS_WIDTH = 1200;
+            const MAX_CANVAS_HEIGHT = 1600;
+            let scale = Math.min(
+                1,
+                MAX_CANVAS_WIDTH / sheetImage.naturalWidth,
+                MAX_CANVAS_HEIGHT / sheetImage.naturalHeight
+            );
+            // 缩放后的画布尺寸
+            const canvasWidth = Math.round(sheetImage.naturalWidth * scale);
+            const canvasHeight = Math.round(sheetImage.naturalHeight * scale);
+
+            doodleCanvas.width = canvasWidth;
+            doodleCanvas.height = canvasHeight;
             doodleCanvas.style.width = sheetImage.width + 'px';
             doodleCanvas.style.height = sheetImage.height + 'px';
             doodleCanvas.style.display = 'block'; // 始终显示
             doodleCanvas.style.pointerEvents = isDoodleMode ? 'auto' : 'none';
             // 预览canvas同步
-            doodlePreviewCanvas.width = sheetImage.naturalWidth;
-            doodlePreviewCanvas.height = sheetImage.naturalHeight;
+            doodlePreviewCanvas.width = canvasWidth;
+            doodlePreviewCanvas.height = canvasHeight;
             doodlePreviewCanvas.style.width = sheetImage.width + 'px';
             doodlePreviewCanvas.style.height = sheetImage.height + 'px';
             doodlePreviewCanvas.style.display = isDoodleMode ? 'block' : 'none';
+            // 记录缩放比例
+            doodleCanvas._scale = scale;
             // 重新加载本地涂鸦
             loadDoodleFromStorage();
         }
@@ -3682,6 +3696,7 @@
         function getCanvasPos(e) {
             const rect = doodleCanvas.getBoundingClientRect();
             let x, y;
+            let scale = doodleCanvas._scale || 1;
             if (e.touches) {
                 x = (e.touches[0].clientX - rect.left) * (doodleCanvas.width / rect.width);
                 y = (e.touches[0].clientY - rect.top) * (doodleCanvas.height / rect.height);
