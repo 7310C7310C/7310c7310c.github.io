@@ -2620,7 +2620,14 @@
                         loadingIndicator.style.display = 'none';
                         console.error('无法加载图片');
                     };
+                    // 先清空src，强制重新加载
+                    sheetImage.src = '';
+                    // 设置新src
                     sheetImage.src = imagePath;
+                    // 如果图片已缓存，onload不会触发，需要手动处理
+                    if (sheetImage.complete) {
+                        sheetImage.onload();
+                    }
                 },
                 // 错误回调
                 () => {
