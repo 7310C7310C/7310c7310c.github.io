@@ -3494,6 +3494,9 @@
             setDoodleRelatedButtonsDisabled(true);
             // 进入涂改模式时加载本地涂鸦
             loadDoodleFromStorage();
+            // 禁用收藏按钮
+            favoriteButton.disabled = true;
+            favoriteButton.style.opacity = '0.4';
         });
         doodleExitBtn.addEventListener('click', () => {
             isDoodleMode = false;
@@ -3509,6 +3512,9 @@
             setDoodleRelatedButtonsDisabled(false);
             // 退出时保存涂鸦
             saveDoodleToStorage();
+            // 恢复收藏按钮
+            favoriteButton.disabled = false;
+            favoriteButton.style.opacity = '';
         });
         doodleClearBtn.addEventListener('click', () => {
             const ctx = doodleCanvas.getContext('2d');
