@@ -3510,8 +3510,8 @@
         function syncDoodleCanvasSize() {
             if (!sheetImage.complete || sheetImage.naturalWidth === 0) return;
             // 最大分辨率
-            const MAX_CANVAS_WIDTH = 1200;
-            const MAX_CANVAS_HEIGHT = 1600;
+            const MAX_CANVAS_WIDTH = 625;
+            const MAX_CANVAS_HEIGHT = 1000;
             let scale = Math.min(
                 1,
                 MAX_CANVAS_WIDTH / sheetImage.naturalWidth,
