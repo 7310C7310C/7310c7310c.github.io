@@ -1274,6 +1274,13 @@
         <div>加载中……</div>
     </div>
 
+    <div id="version-modal" style="display:none;position:fixed;z-index:2000;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.45);justify-content:center;align-items:center;">
+      <div style="background:#fffbe9;padding:32px 28px 24px 28px;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.13);min-width:260px;text-align:center;">
+        <h2 style="color:#8c6a4d;font-size:1.3rem;margin-bottom:18px;">请选择优先显示版本</h2>
+        <div id="modalVersionBtnList" style="display:flex;flex-direction:column;gap:14px;margin-bottom:10px;"></div>
+      </div>
+    </div>
+
     <script>
         // 语言配置
         const translations = {
@@ -2214,6 +2221,8 @@
             // 更新首页本周歌曲按钮的日期
             document.getElementById('weeklyButtonDate').textContent = 
                 `${t('updateDate')}${songsData.weeklySongs.updateDate}`;
+            
+            showVersionModal();
         }
 
         // 初始化语言设置
@@ -4000,6 +4009,38 @@
             doodleRedoBtn.disabled = doodleRedoStack.length === 0;
             doodleRedoBtn.style.opacity = doodleRedoBtn.disabled ? '0.3' : '0.9';
         }
+
+        function showVersionModal() {
+            const modal = document.getElementById('version-modal');
+            const btnList = document.getElementById('modalVersionBtnList');
+            btnList.innerHTML = '';
+            // 填充所有版本为按钮
+            getAllVersions().forEach(version => {
+                const btn = document.createElement('button');
+                btn.textContent = t(version, 'versions');
+                btn.value = version;
+                btn.style = 'padding:10px 0;font-size:1.1rem;border-radius:8px;border:none;background:#8c6a4d;color:#fff;cursor:pointer;transition:background 0.2s;';
+                btn.onmouseenter = function(){btn.style.background='#a07a5a';};
+                btn.onmouseleave = function(){btn.style.background='#8c6a4d';};
+                btn.onclick = function() {
+                    currentState.preferredVersion = version;
+                    renderVersionPreference();
+                    hideVersionModal();
+                };
+                btnList.appendChild(btn);
+            });
+            modal.style.display = 'flex';
+        }
+        function hideVersionModal() {
+            document.getElementById('version-modal').style.display = 'none';
+        }
+
+        document.getElementById('modalVersionBtnList').onclick = function() {
+            const select = document.getElementById('versionSelect');
+            currentState.preferredVersion = select.value;
+            renderVersionPreference();
+            hideVersionModal();
+        };
     </script>
 </body>
 </html>
