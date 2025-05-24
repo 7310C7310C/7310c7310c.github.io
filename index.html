@@ -193,6 +193,7 @@
             position: relative;
             max-width: 800px;
             margin: 0;
+            overflow-x: auto;
         }
         
         .sheet-image {
@@ -201,6 +202,12 @@
             width: 100%;
             height: auto;
             max-width: 100%;
+        }
+        /* 适应高度时横向居中 */
+        .fit-height-mode {
+            display: block !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
         }
         
         /* 页码指示器和版本按钮容器 */
@@ -4109,6 +4116,7 @@
                 sheetImage.style.maxHeight = '100vh';
                 fitModeIconExpand.style.display = 'none';
                 fitModeIconCollapse.style.display = '';
+                sheetImage.classList.add('fit-height-mode');
             } else {
                 sheetImage.style.width = '100%';
                 sheetImage.style.height = 'auto';
@@ -4116,6 +4124,7 @@
                 sheetImage.style.maxHeight = 'unset';
                 fitModeIconExpand.style.display = '';
                 fitModeIconCollapse.style.display = 'none';
+                sheetImage.classList.remove('fit-height-mode');
             }
             // 画布同步
             syncDoodleCanvasSize();
