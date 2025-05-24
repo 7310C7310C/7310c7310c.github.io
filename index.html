@@ -4123,6 +4123,7 @@
                 fitModeIconExpand.style.display = 'none';
                 fitModeIconCollapse.style.display = '';
                 sheetImage.classList.add('fit-height-mode');
+                document.getElementById('viewerContent').style.alignItems = 'flex-start';
             } else {
                 sheetImage.style.width = '100%';
                 sheetImage.style.height = 'auto';
@@ -4131,6 +4132,7 @@
                 fitModeIconExpand.style.display = '';
                 fitModeIconCollapse.style.display = 'none';
                 sheetImage.classList.remove('fit-height-mode');
+                document.getElementById('viewerContent').style.alignItems = 'center';
             }
             // 画布同步
             syncDoodleCanvasSize();
