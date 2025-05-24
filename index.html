@@ -1084,6 +1084,21 @@
             padding: 0 2px;
         }
         .doodle-btn{opacity:0.9;transition:opacity 0.2s;}.doodle-btn:hover{opacity:1;}
+
+        #version-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.18); /* 透明度可以适当调节 */
+            backdrop-filter: blur(8px);    /* 毛玻璃效果 */
+            -webkit-backdrop-filter: blur(8px); /* 兼容Safari */
+            justify-content: center;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
