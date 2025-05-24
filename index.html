@@ -1293,13 +1293,14 @@
                 <div class="page-nav" id="prev-page">‹</div>
                 <div class="page-indicator" id="page-indicator">1 / 1</div>
                 <div class="page-nav" id="next-page">›</div>
-                <!-- 适应模式切换按钮紧跟页码指示器 -->
-                <button class="doodle-btn" id="fitModeBtn" style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:transparent;border:none;cursor:pointer;">
-                    <!-- 全屏/退出全屏图标 -->
-                    <svg id="fitModeIconExpand" width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="white" stroke-width="2" style="opacity:0.8;"><polyline points="3,9 3,3 9,3"/><line x1="3" y1="3" x2="9" y2="9"/><polyline points="19,13 19,19 13,19"/><line x1="19" y1="19" x2="13" y2="13"/><polyline points="13,3 19,3 19,9"/><line x1="19" y1="3" x2="13" y2="9"/><polyline points="9,19 3,19 3,13"/><line x1="3" y1="19" x2="9" y2="13"/></svg>
-                    <svg id="fitModeIconCollapse" width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="white" stroke-width="2" style="opacity:0.8;display:none;"><polyline points="9,3 3,3 3,9"/><line x1="3" y1="3" x2="9" y2="9"/><polyline points="13,19 19,19 19,13"/><line x1="19" y1="19" x2="13" y2="13"/><polyline points="19,9 19,3 13,3"/><line x1="19" y1="3" x2="13" y2="9"/><polyline points="3,13 3,19 9,19"/><line x1="3" y1="19" x2="9" y2="13"/></svg>
-                </button>
             </div>
+            
+            <!-- 适应模式切换按钮位于页码指示器和下一首之间 -->
+            <button class="doodle-btn" id="fitModeBtn" style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:transparent;border:none;cursor:pointer;margin:0 0px;">
+                <!-- 全屏/退出全屏图标 -->
+                <svg id="fitModeIconExpand" width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="white" stroke-width="2" style="opacity:0.8;"><polyline points="3,9 3,3 9,3"/><line x1="3" y1="3" x2="9" y2="9"/><polyline points="19,13 19,19 13,19"/><line x1="19" y1="19" x2="13" y2="13"/><polyline points="13,3 19,3 19,9"/><line x1="19" y1="3" x2="13" y2="9"/><polyline points="9,19 3,19 3,13"/><line x1="3" y1="19" x2="9" y2="13"/></svg>
+                <svg id="fitModeIconCollapse" width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="white" stroke-width="2" style="opacity:0.8;display:none;"><polyline points="9,3 3,3 3,9"/><line x1="3" y1="3" x2="9" y2="9"/><polyline points="13,19 19,19 19,13"/><line x1="19" y1="19" x2="13" y2="13"/><polyline points="19,9 19,3 13,3"/><line x1="19" y1="3" x2="13" y2="9"/><polyline points="3,13 3,19 9,19"/><line x1="3" y1="19" x2="9" y2="13"/></svg>
+            </button>
             
             <!-- 下一首按钮 -->
             <div class="song-nav" id="next-song">
