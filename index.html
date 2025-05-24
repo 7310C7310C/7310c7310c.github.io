@@ -193,7 +193,7 @@
             position: relative;
             max-width: 800px;
             margin: 0;
-            overflow-x: auto;
+            overflow-x: visible;
         }
         
         .sheet-image {
@@ -1105,6 +1105,12 @@
             -webkit-backdrop-filter: blur(8px); /* 兼容Safari */
             justify-content: center;
             align-items: center;
+        }
+
+        @media (max-width: 900px) {
+            .sheet-container {
+                overflow-x: auto;
+            }
         }
     </style>
 </head>
