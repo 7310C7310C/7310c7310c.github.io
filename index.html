@@ -1276,7 +1276,7 @@
 
     <div id="version-modal" style="display:none;position:fixed;z-index:2000;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.45);justify-content:center;align-items:center;">
       <div style="background:#fffbe9;padding:32px 28px 24px 28px;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.13);min-width:260px;text-align:center;">
-        <h2 style="color:#8c6a4d;font-size:1.3rem;margin-bottom:18px;">请选择优先显示版本</h2>
+        <h2 id="modalVersionTitle" style="color:#8c6a4d;font-size:1.3rem;margin-bottom:18px;">请选择优先显示版本</h2>
         <div id="modalVersionBtnList" style="display:flex;flex-direction:column;gap:14px;margin-bottom:10px;"></div>
       </div>
     </div>
@@ -1348,6 +1348,7 @@
                 'pen': '画笔',
                 'penMode': '画笔模式',
                 'eraserMode': '橡皮擦模式',
+                'selectPreferredVersion': '请选择优先显示版本',
             },
             'en': {
                 // 标题和导航
@@ -1413,6 +1414,7 @@
                 'pen': 'Pen',
                 'penMode': 'Pen Mode',
                 'eraserMode': 'Eraser Mode',
+                'selectPreferredVersion': 'Select preferred version',
             }
         };
         
@@ -4015,7 +4017,10 @@
         function showVersionModal() {
             const modal = document.getElementById('version-modal');
             const btnList = document.getElementById('modalVersionBtnList');
+            const title = document.getElementById('modalVersionTitle');
             btnList.innerHTML = '';
+            // 设置标题多语言
+            title.textContent = t('selectPreferredVersion');
             // 填充所有版本为按钮
             getAllVersions().forEach(version => {
                 const btn = document.createElement('button');
@@ -4032,9 +4037,28 @@
                 btnList.appendChild(btn);
             });
             modal.style.display = 'flex';
+            // 禁止页面滚动和交互
+            document.body.style.overflow = 'hidden';
+            document.body.style.touchAction = 'none';
+            document.body.addEventListener('wheel', preventScroll, { passive: false });
+            document.body.addEventListener('touchmove', preventScroll, { passive: false });
+            document.body.addEventListener('keydown', preventKeyScroll, true);
         }
         function hideVersionModal() {
             document.getElementById('version-modal').style.display = 'none';
+            // 恢复页面滚动和交互
+            document.body.style.overflow = '';
+            document.body.style.touchAction = '';
+            document.body.removeEventListener('wheel', preventScroll, { passive: false });
+            document.body.removeEventListener('touchmove', preventScroll, { passive: false });
+            document.body.removeEventListener('keydown', preventKeyScroll, true);
+        }
+        function preventScroll(e) { e.preventDefault(); }
+        function preventKeyScroll(e) {
+            // 禁止方向键、空格、PageUp/PageDown等
+            if ([32,33,34,35,36,37,38,39,40].includes(e.keyCode)) {
+                e.preventDefault();
+            }
         }
 
         document.getElementById('modalVersionBtnList').onclick = function() {
