@@ -1276,6 +1276,13 @@
                 <div class="page-nav" id="next-page">›</div>
             </div>
             
+            <!-- 新增：图片适应模式切换按钮 -->
+            <button class="doodle-btn" id="fitModeBtn" style="margin-left:10px;display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:transparent;border:none;cursor:pointer;">
+                <!-- 默认横向图标 -->
+                <svg id="fitModeIconLandscape" width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="white" stroke-width="2" style="opacity:0.7;"><rect x="3" y="7" width="16" height="8" rx="2" fill="white" fill-opacity="0.3"/></svg>
+                <svg id="fitModeIconPortrait" width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="white" stroke-width="2" style="display:none;opacity:0.7;"><rect x="7" y="3" width="8" height="16" rx="2" fill="white" fill-opacity="0.3"/></svg>
+            </button>
+            
             <!-- 下一首按钮 -->
             <div class="song-nav" id="next-song">
                 <span class="song-nav-text">下一首</span>
@@ -2909,6 +2916,9 @@
             // 清除打开来源标记
             currentState.openedFrom = null;
             history.replaceState(null, null);
+            // 退出时恢复图片适应模式为宽度适应
+            isFitHeight = false;
+            updateSheetFitMode();
         }
 
         // 设置事件监听器
@@ -4082,6 +4092,37 @@
             renderVersionPreference();
             hideVersionModal();
         };
+
+        // 适应模式切换
+        const fitModeBtn = document.getElementById('fitModeBtn');
+        const fitModeIconLandscape = document.getElementById('fitModeIconLandscape');
+        const fitModeIconPortrait = document.getElementById('fitModeIconPortrait');
+        let isFitHeight = false;
+        fitModeBtn.addEventListener('click', function() {
+            isFitHeight = !isFitHeight;
+            updateSheetFitMode();
+        });
+        function updateSheetFitMode() {
+            if (isFitHeight) {
+                sheetImage.style.width = 'auto';
+                sheetImage.style.height = '100vh';
+                sheetImage.style.maxWidth = 'unset';
+                sheetImage.style.maxHeight = '100vh';
+                fitModeIconLandscape.style.display = 'none';
+                fitModeIconPortrait.style.display = '';
+            } else {
+                sheetImage.style.width = '100%';
+                sheetImage.style.height = 'auto';
+                sheetImage.style.maxWidth = '100%';
+                sheetImage.style.maxHeight = 'unset';
+                fitModeIconLandscape.style.display = '';
+                fitModeIconPortrait.style.display = 'none';
+            }
+            // 画布同步
+            syncDoodleCanvasSize();
+        }
+        // 每次图片加载后自动同步适应模式
+        sheetImage.addEventListener('load', updateSheetFitMode);
     </script>
 </body>
 </html>
