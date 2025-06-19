@@ -1401,6 +1401,14 @@
                     '圣神': '圣神'
                 },
                 
+                // 子分类名称
+                'subCategories': {
+                    '通用': '通用',
+                    '甲年': '甲年',
+                    '乙年': '乙年',
+                    '丙年': '丙年'
+                },
+                
                 // 版本名称
                 'versions': {
                     '原谱': '原谱',
@@ -1466,6 +1474,14 @@
                     '礼成咏': 'Recessional',
                     '圣诞': 'Christmas',
                     '圣神': 'Holy Spirit'
+                },
+                
+                // 子分类名称
+                'subCategories': {
+                    '通用': 'Common',
+                    '甲年': 'Year A',
+                    '乙年': 'Year B',
+                    '丙年': 'Year C'
                 },
                 
                 // 版本名称
@@ -2811,7 +2827,10 @@
             isSearchActive: false,
             lastSearchQuery: "",
             openedFrom: null,
-            currentSongList: [] // 用于存储当前显示的歌曲列表
+            currentSongList: [], // 用于存储当前显示的歌曲列表
+            isSubCategoryView: false, // 标记是否在子分类视图
+            parentCategory: null, // 存储父分类名称
+            currentSubCategory: null // 存储当前子分类名称
         };
 
         // 本地存储管理
@@ -3163,7 +3182,21 @@
             
             // 更新分类标题
             if (currentState.currentCategory) {
-                categoryTitle.textContent = t(currentState.currentCategory, 'categories');
+                // 检查是否包含子分类信息（包含" - "分隔符）
+                if (categoryTitle.textContent.includes(" - ")) {
+                    const parts = categoryTitle.textContent.split(" - ");
+                    const categoryName = parts[0];
+                    const subCategoryName = parts[1];
+                    
+                    // 从状态中获取当前子分类名称，以便正确翻译
+                    if (currentState.currentSubCategory) {
+                        categoryTitle.textContent = `${t(currentState.currentCategory, 'categories')} - ${t(currentState.currentSubCategory, 'subCategories')}`;
+                    } else {
+                        categoryTitle.textContent = `${t(currentState.currentCategory, 'categories')} - ${subCategoryName}`;
+                    }
+                } else {
+                    categoryTitle.textContent = t(currentState.currentCategory, 'categories');
+                }
             }
             
             // 更新版本切换按钮文本
@@ -3189,6 +3222,15 @@
             if (doodleExitBtn) doodleExitBtn.textContent = t('doodleSave');
             if (doodleClearBtn) doodleClearBtn.textContent = t('doodleClear');
             if (doodleEraserBtn) doodleEraserBtn.textContent = isEraser ? t('pen') : t('eraser');
+            
+            // 更新子分类卡片
+            const subcategoryCards = document.querySelectorAll('.category-card h2[data-subcategory]');
+            subcategoryCards.forEach(card => {
+                const subcategoryName = card.getAttribute('data-subcategory');
+                if (subcategoryName) {
+                    card.textContent = t(subcategoryName, 'subCategories');
+                }
+            });
         }
         
         // 更新分类名称（在列表中和显示歌曲时）
@@ -3313,11 +3355,60 @@
             });
         }
 
-        // 显示分类下的歌曲
+        // 修改showCategory函数，添加"答唱咏（朱健仁）"的子分类处理
         function showCategory(categoryName) {
             const category = songsData.categories.find(c => c.name === categoryName);
             if (!category) return;
 
+            // 对"答唱咏（朱健仁）"卡片进行特殊处理
+            if (categoryName === "答唱咏（朱健仁）") {
+                // 创建子分类视图
+                songsContainer.innerHTML = '';
+                mainView.style.display = 'none';
+                categoryView.style.display = 'block';
+                categoryTitle.textContent = t(categoryName, 'categories');
+                
+                                 // 创建四个子分类：通用、甲年、乙年、丙年
+                 const subCategories = ["通用", "甲年", "乙年", "丙年"];
+                 
+                 // 将歌曲按标题分类
+                 const songsBySubCategory = {
+                     "甲年": category.songs.filter(song => song.title.startsWith("甲年")),
+                     "乙年": category.songs.filter(song => song.title.startsWith("乙年")),
+                     "丙年": category.songs.filter(song => song.title.startsWith("丙年")),
+                     "通用": category.songs.filter(song => 
+                         !song.title.startsWith("甲年") && 
+                         !song.title.startsWith("乙年") && 
+                         !song.title.startsWith("丙年")
+                     )
+                 };
+                 
+                 // 创建四个子卡片
+                 subCategories.forEach(subCat => {
+                     const subCategoryElement = document.createElement('div');
+                     subCategoryElement.className = 'category-card';
+                     
+                     // 使用data-subcategory属性保存子分类名称，以便语言切换时能正确更新
+                     subCategoryElement.innerHTML = `
+                         <h2 data-subcategory="${subCat}">${t(subCat, 'subCategories')}</h2>
+                         <p>${songsBySubCategory[subCat].length} ${t('songsCount')}</p>
+                     `;
+                    
+                    subCategoryElement.addEventListener('click', () => showSubCategory(categoryName, subCat, songsBySubCategory[subCat]));
+                    songsContainer.appendChild(subCategoryElement);
+                });
+                
+                // 隐藏历史按钮和语言切换按钮
+                historyButton.style.display = 'none';
+                document.getElementById('languageButton').style.display = 'none';
+                
+                // 滚动到顶部
+                window.scrollTo(0, 0);
+                
+                return; // 提前返回，不执行下面的常规分类显示逻辑
+            }
+
+            // 常规分类的显示逻辑（原有代码）
             currentState.currentCategory = categoryName;
             categoryTitle.textContent = t(categoryName, 'categories');
             songsContainer.innerHTML = '';
@@ -3349,6 +3440,40 @@
             // 新增：切换到分类界面时滚动到顶部
             window.scrollTo(0, 0);
         }
+
+                 // 新增函数：显示子分类下的歌曲
+         function showSubCategory(categoryName, subCategoryName, songs) {
+             currentState.currentCategory = categoryName;
+             categoryTitle.textContent = `${t(categoryName, 'categories')} - ${t(subCategoryName, 'subCategories')}`;
+             songsContainer.innerHTML = '';
+             
+             // 存储当前歌曲列表，用于导航
+             currentState.currentSongList = songs.map(song => ({
+                 ...song,
+                 category: categoryName
+             }));
+
+             songs.forEach((song) => {
+                 const songElement = document.createElement('div');
+                 songElement.className = 'song-item';
+                 songElement.innerHTML = `
+                     <div class="song-number">${song.id}</div>
+                     <div class="song-title">${song.title}</div>
+                 `;
+                 songElement.addEventListener('click', () => showSong(categoryName, song));
+                 songsContainer.appendChild(songElement);
+             });
+             
+                              // 修改返回按钮行为：标记当前是子分类视图
+             currentState.isSubCategoryView = true;
+             currentState.parentCategory = categoryName;
+             
+             // 记录当前子分类名称，用于键盘导航限制
+             currentState.currentSubCategory = subCategoryName;
+             
+             // 滚动到顶部
+             window.scrollTo(0, 0);
+         }
 
         // 显示本周歌曲
         function showWeeklySongs() {
@@ -3416,6 +3541,10 @@
             }).filter(Boolean);
         } else if (categoryView.style.display === 'block') {
             currentState.openedFrom = 'category';
+            
+            // 特殊处理：如果是从子分类视图点击了歌曲，保持isSubCategoryView标记
+            // 这样在使用键盘上下键导航时可以知道是在子分类视图中
+            
             // 设置当前歌曲列表为当前分类下的歌曲
             const category = songsData.categories.find(c => c.name === categoryName);
             currentState.currentSongList = category.songs.map(s => ({
@@ -3640,6 +3769,26 @@
             
             if (currentIndex > 0) {
                 const prevSong = currentState.currentSongList[currentIndex - 1];
+                
+                // 如果当前在子分类视图中，确保只在同一子分类内导航
+                if (viewerView.style.display === 'flex' && currentState.isSubCategoryView && currentState.openedFrom === 'category') {
+                    // 提取当前显示的歌曲标题的前缀（甲年/乙年/丙年）
+                    const getCurrentPrefix = (title) => {
+                        if (title.startsWith('甲年')) return '甲年';
+                        if (title.startsWith('乙年')) return '乙年';
+                        if (title.startsWith('丙年')) return '丙年';
+                        return 'other'; // 通用类别
+                    };
+                    
+                    const currentPrefix = getCurrentPrefix(currentState.currentSong.title);
+                    const prevPrefix = getCurrentPrefix(prevSong.title);
+                    
+                    // 如果前缀不同，则不允许导航
+                    if (currentPrefix !== prevPrefix) {
+                        return;
+                    }
+                }
+                
                 showSong(prevSong.category, prevSong);
             }
         }
@@ -3654,6 +3803,26 @@
             
             if (currentIndex < currentState.currentSongList.length - 1) {
                 const nextSong = currentState.currentSongList[currentIndex + 1];
+                
+                // 如果当前在子分类视图中，确保只在同一子分类内导航
+                if (viewerView.style.display === 'flex' && currentState.isSubCategoryView && currentState.openedFrom === 'category') {
+                    // 提取当前显示的歌曲标题的前缀（甲年/乙年/丙年）
+                    const getCurrentPrefix = (title) => {
+                        if (title.startsWith('甲年')) return '甲年';
+                        if (title.startsWith('乙年')) return '乙年';
+                        if (title.startsWith('丙年')) return '丙年';
+                        return 'other'; // 通用类别
+                    };
+                    
+                    const currentPrefix = getCurrentPrefix(currentState.currentSong.title);
+                    const nextPrefix = getCurrentPrefix(nextSong.title);
+                    
+                    // 如果前缀不同，则不允许导航
+                    if (currentPrefix !== nextPrefix) {
+                        return;
+                    }
+                }
+                
                 showSong(nextSong.category, nextSong);
             }
         }
@@ -3722,11 +3891,19 @@
         function setupEventListeners() {
             // 返回按钮
             backButton.addEventListener('click', () => {
-                categoryView.style.display = 'none';
-                mainView.style.display = 'block';
-                // 返回主界面时显示历史按钮和语言切换按钮
-                historyButton.style.display = 'flex';
-                document.getElementById('languageButton').style.display = 'flex';
+                // 检查是否在子分类视图
+                if (currentState.isSubCategoryView) {
+                    // 返回上级分类，而不是返回首页
+                    currentState.isSubCategoryView = false;
+                    showCategory(currentState.parentCategory);
+                } else {
+                    // 常规返回首页行为
+                    categoryView.style.display = 'none';
+                    mainView.style.display = 'block';
+                    // 返回主界面时显示历史按钮和语言切换按钮
+                    historyButton.style.display = 'flex';
+                    document.getElementById('languageButton').style.display = 'flex';
+                }
             });
             
             // 本周歌曲返回按钮
@@ -3809,11 +3986,19 @@
                     history.pushState(null, null, document.URL);
                     event.preventDefault();
                 } else if (categoryView.style.display === 'block') {
-                    // 如果在分类视图，返回主视图
-                    categoryView.style.display = 'none';
-                    mainView.style.display = 'block';
-                    // 返回主界面时显示历史按钮
-                    historyButton.style.display = 'flex';
+                    // 检查是否在子分类视图
+                    if (currentState.isSubCategoryView) {
+                        // 返回上级分类，而不是返回首页
+                        currentState.isSubCategoryView = false;
+                        showCategory(currentState.parentCategory);
+                    } else {
+                        // 如果在分类视图，返回主视图
+                        categoryView.style.display = 'none';
+                        mainView.style.display = 'block';
+                        // 返回主界面时显示历史按钮
+                        historyButton.style.display = 'flex';
+                        document.getElementById('languageButton').style.display = 'flex';
+                    }
                     history.pushState(null, null, document.URL);
                     event.preventDefault();
                 } else if (weeklyView.style.display === 'block') {
