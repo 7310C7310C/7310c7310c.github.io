@@ -267,10 +267,9 @@
     const modalContent = document.getElementById('modal-content');
     const modalRestart = document.getElementById('modal-restart');
     const modalClose = document.getElementById('modal-close');
-    // 触摸滑动（跟手移动）
-    let touchStartX=0, touchStartY=0, touchMoved=false, touchTile=null, touchIdx=null, dragDir=null, dragValid=false;
-    let dragStartLeft=0, dragStartTop=0;
-    let dragThreshold=32; // 拖动超过此距离才算有效
+    // 触摸滑动（全区域滑动触发移动）
+    let swipeStartX=0, swipeStartY=0;
+    const swipeThreshold = 32; // 滑动阈值
     // 工具函数
     function pad(n) { return n<10 ? '0'+n : n; }
     function getBestRecord(size) {
@@ -463,84 +462,35 @@
       const idx = ny*size+nx;
       move(idx);
     });
-    // 触摸滑动（跟手移动）
+    // 触摸滑动（全区域滑动触发移动）
     puzzleEl.addEventListener('touchstart', e => {
       if(!isPlaying || isAnimating) return;
       if(e.touches.length!==1) return;
       const touch = e.touches[0];
-      const target = document.elementFromPoint(touch.clientX, touch.clientY);
-      if(!target || !target.classList.contains('tile') || target.classList.contains('empty')) return;
-      const idx = +target.dataset.idx;
-      if(!canMove(idx)) return;
-      touchStartX = touch.clientX;
-      touchStartY = touch.clientY;
-      touchMoved = false;
-      touchTile = target;
-      touchIdx = idx;
-      dragDir = null;
-      dragValid = false;
-      // 记录初始位置
-      dragStartLeft = parseFloat(touchTile.style.left);
-      dragStartTop = parseFloat(touchTile.style.top);
-      // 提高层级
-      touchTile.style.zIndex = 10;
-    });
-    puzzleEl.addEventListener('touchmove', e => {
-      if(!isPlaying || isAnimating || !touchTile) return;
-      const touch = e.touches[0];
-      const dx = touch.clientX - touchStartX;
-      const dy = touch.clientY - touchStartY;
-      if(!touchMoved && Math.abs(dx)+Math.abs(dy)>8) touchMoved = true;
-      if(!touchMoved) return;
-      // 只允许单方向拖动
-      if(!dragDir) {
-        if(Math.abs(dx)>Math.abs(dy)) dragDir = 'x';
-        else dragDir = 'y';
-      }
-      let move = 0;
-      let maxMove = 0;
-      if(dragDir==='x') {
-        move = dx;
-        // 只能左右移动且不能超越空格
-        const ex = emptyIdx%size, tx = touchIdx%size;
-        if(ex>tx) maxMove = (ex-tx)*parseFloat(touchTile.style.width);
-        else maxMove = (ex-tx)*parseFloat(touchTile.style.width);
-        if((ex>tx && move>maxMove) || (ex<tx && move<maxMove)) move = maxMove;
-        if((ex>tx && move<0) || (ex<tx && move>0)) move = 0;
-        touchTile.style.transform = `translateX(${move}px)`;
-        dragValid = Math.abs(move) > dragThreshold;
-      } else {
-        move = dy;
-        // 只能上下移动且不能超越空格
-        const ey = Math.floor(emptyIdx/size), ty = Math.floor(touchIdx/size);
-        if(ey>ty) maxMove = (ey-ty)*parseFloat(touchTile.style.height);
-        else maxMove = (ey-ty)*parseFloat(touchTile.style.height);
-        if((ey>ty && move>maxMove) || (ey<ty && move<maxMove)) move = maxMove;
-        if((ey>ty && move<0) || (ey<ty && move>0)) move = 0;
-        touchTile.style.transform = `translateY(${move}px)`;
-        dragValid = Math.abs(move) > dragThreshold;
-      }
-      e.preventDefault();
+      swipeStartX = touch.clientX;
+      swipeStartY = touch.clientY;
     });
     puzzleEl.addEventListener('touchend', e => {
-      if(!isPlaying || isAnimating || !touchTile) return;
-      // 判断是否有效拖动
-      if(dragValid) {
-        move(touchIdx);
+      if(!isPlaying || isAnimating) return;
+      const touch = e.changedTouches[0];
+      const dx = touch.clientX - swipeStartX;
+      const dy = touch.clientY - swipeStartY;
+      if(Math.abs(dx)<swipeThreshold && Math.abs(dy)<swipeThreshold) return;
+      let dir = null;
+      if(Math.abs(dx)>Math.abs(dy)) {
+        dir = dx>0 ? 'right' : 'left';
       } else {
-        // 回弹
-        touchTile.style.transition = 'transform 0.18s';
-        touchTile.style.transform = 'none';
-        setTimeout(()=>{
-          if(touchTile) touchTile.style.transition = '';
-        }, 200);
+        dir = dy>0 ? 'down' : 'up';
       }
-      // 恢复
-      if(touchTile) touchTile.style.zIndex = '';
-      touchTile = null;
-      touchIdx = null;
-      dragDir = null;
-      dragValid = false;
+      let ex = emptyIdx%size, ey = Math.floor(emptyIdx/size);
+      let nx = ex, ny = ey;
+      if(dir==='up') ny++;
+      if(dir==='down') ny--;
+      if(dir==='left') nx++;
+      if(dir==='right') nx--;
+      if(nx<0||nx>=size||ny<0||ny>=size) return;
+      const idx = ny*size+nx;
+      move(idx);
     });
     // 难度切换
     diffEl.addEventListener('change', e => {
