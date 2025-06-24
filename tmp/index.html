@@ -267,6 +267,11 @@
     const modalContent = document.getElementById('modal-content');
     const modalRestart = document.getElementById('modal-restart');
     const modalClose = document.getElementById('modal-close');
+    // 触摸滑动相关
+    let touchStartX=0, touchStartY=0, touchMoved=false;
+    let touchTileIdx = null;
+    let touchTileEl = null;
+    let touchTileOrigin = {x:0, y:0};
     // 工具函数
     function pad(n) { return n<10 ? '0'+n : n; }
     function getBestRecord(size) {
@@ -460,35 +465,72 @@
       move(idx);
     });
     // 触摸滑动
-    let touchStartX=0, touchStartY=0, touchMoved=false;
     puzzleEl.addEventListener('touchstart', e => {
       if(!isPlaying || isAnimating) return;
       if(e.touches.length!==1) return;
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
+      const touch = e.touches[0];
+      const target = document.elementFromPoint(touch.clientX, touch.clientY);
+      const tile = target && target.closest('.tile');
+      if(!tile || tile.classList.contains('empty')) return;
+      const idx = +tile.dataset.idx;
+      if(!canMove(idx)) return;
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
       touchMoved = false;
+      touchTileIdx = idx;
+      touchTileEl = tile;
+      // 记录原始位置
+      touchTileOrigin.x = parseFloat(tile.style.left);
+      touchTileOrigin.y = parseFloat(tile.style.top);
+      tile.style.zIndex = 10;
+      tile.style.transition = 'none';
     });
     puzzleEl.addEventListener('touchmove', e => {
-      if(!isPlaying || isAnimating) return;
+      if(!isPlaying || isAnimating || touchTileEl===null) return;
       touchMoved = true;
+      const touch = e.touches[0];
+      const dx = touch.clientX - touchStartX;
+      const dy = touch.clientY - touchStartY;
+      // 只允许单方向拖动
+      let moveX = 0, moveY = 0;
+      if(Math.abs(dx)>Math.abs(dy)) moveX = dx;
+      else moveY = dy;
+      touchTileEl.style.transform = `translate(${moveX}px,${moveY}px)`;
     });
     puzzleEl.addEventListener('touchend', e => {
-      if(!isPlaying || isAnimating || !touchMoved) return;
-      const dx = e.changedTouches[0].clientX - touchStartX;
-      const dy = e.changedTouches[0].clientY - touchStartY;
-      if(Math.abs(dx)<24 && Math.abs(dy)<24) return;
+      if(!isPlaying || isAnimating || touchTileEl===null) {
+        touchTileEl = null;
+        return;
+      }
+      const touch = e.changedTouches[0];
+      const dx = touch.clientX - touchStartX;
+      const dy = touch.clientY - touchStartY;
       let dir = null;
-      if(Math.abs(dx)>Math.abs(dy)) dir = dx>0?'right':'left';
-      else dir = dy>0?'down':'up';
+      if(Math.abs(dx)>Math.abs(dy) && Math.abs(dx)>24) dir = dx>0?'right':'left';
+      else if(Math.abs(dy)>24) dir = dy>0?'down':'up';
       let ex = emptyIdx%size, ey = Math.floor(emptyIdx/size);
       let nx = ex, ny = ey;
       if(dir==='up') ny++;
       if(dir==='down') ny--;
       if(dir==='left') nx++;
       if(dir==='right') nx--;
-      if(nx<0||nx>=size||ny<0||ny>=size) return;
-      const idx = ny*size+nx;
-      move(idx);
+      const idx = touchTileIdx;
+      let canMoveNow = false;
+      if(nx>=0&&nx<size&&ny>=0&&ny<size && idx===ny*size+nx) canMoveNow = true;
+      if(canMoveNow) {
+        touchTileEl.style.transition = '';
+        touchTileEl.style.transform = '';
+        move(idx);
+      } else {
+        // 回弹
+        touchTileEl.style.transition = 'transform 0.18s cubic-bezier(0.4,0.2,0.2,1)';
+        touchTileEl.style.transform = '';
+        setTimeout(()=>{
+          if(touchTileEl) touchTileEl.style.zIndex = '';
+        }, 200);
+      }
+      touchTileEl = null;
+      touchTileIdx = null;
     });
     // 难度切换
     diffEl.addEventListener('change', e => {
