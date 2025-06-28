@@ -2767,13 +2767,13 @@
         "songs": [
             {
                 "category": "领主咏",
-                "id": "009",
-                "title": "上主是我的光明，我的救援"
+                "id": "010",
+                "title": "基督灵魂圣化我"
             },
             {
                 "category": "领主咏",
-                "id": "010",
-                "title": "基督灵魂圣化我"
+                "id": "009",
+                "title": "上主是我的光明，我的救援"
             },
             {
                 "category": "领主咏",
@@ -4057,6 +4057,11 @@
                 // ESC键退出查看器
                 if (e.key === 'Escape' && viewerView.style.display === 'flex') {
                     closeViewer();
+                }
+                // F键切换适应模式（全屏/退出全屏）
+                if ((e.key === 'f' || e.key === 'F') && viewerView.style.display === 'flex' && !isDoodleMode) {
+                    e.preventDefault();
+                    fitModeBtn.click();
                 }
                 // 左右方向键翻页
                 if (viewerView.style.display === 'flex') {
