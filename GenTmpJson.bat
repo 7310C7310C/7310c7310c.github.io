@@ -2,41 +2,41 @@
 chcp 65001 > nul
 setlocal enabledelayedexpansion
 
-:: 设置输出文件路径
+:: Set output file path
 set "outputFile=songsData.json"
 
-:: 创建空的JSON结构
+:: Create empty JSON structure
 echo { > "%outputFile%"
 echo     "categories": { >> "%outputFile%"
 
-:: 遍历img文件夹下的所有子文件夹（分类）
+:: Loop through all subfolders in img folder (categories)
 set "firstCategory=true"
 for /d %%c in ("img\*") do (
     set "categoryName=%%~nxc"
     
-    :: 如果不是第一个分类，添加逗号
+    :: Add comma if not the first category
     if "!firstCategory!"=="false" (
         echo , >> "%outputFile%"
     )
     set "firstCategory=false"
     
-    :: 开始当前分类的JSON结构
+    :: Start current category JSON structure
     echo         "!categoryName!": { >> "%outputFile%"
     echo             "songs": { >> "%outputFile%"
     
-    :: 获取当前分类下的所有歌曲文件
+    :: Get all song files in current category
     set "fileCount=0"
     for %%f in ("%%c\*.jpeg" "%%c\*.jpg") do (
         set /a "fileCount+=1"
         set "file!fileCount!=%%~nf"
     )
     
-    :: 处理收集到的文件
+    :: Process collected files
     set "processedIds="
     for /l %%i in (1,1,!fileCount!) do (
         set "filename=!file%%i!"
         
-        :: 解析文件名格式：分类_ID_标题[_版本][_页码]
+        :: Parse filename format: category_ID_title[_version]_page
         for /f "tokens=1-5 delims=_" %%a in ("!filename!") do (
             set "id=%%b"
             set "title=%%c"
@@ -44,74 +44,90 @@ for /d %%c in ("img\*") do (
             set "page=%%e"
         )
         
-        :: 检查是否已经处理过这个ID
+        :: Check if this ID has been processed
         echo !processedIds! | find "!id!" > nul
         if !errorlevel! neq 0 (
-            :: 新歌曲ID，添加到处理列表
+            :: New song ID, add to processed list
             set "processedIds=!processedIds! !id!"
             
-            :: 如果不是第一个歌曲，添加逗号
+            :: Add comma if not the first song
             if not "!processedIds!"==" !id!" (
                 echo , >> "%outputFile%"
             )
             
-            :: 开始当前歌曲的JSON结构
+            :: Start current song JSON structure
             echo                 "!id!": { >> "%outputFile%"
             echo                     "title": "!title!", >> "%outputFile%"
             
-            :: 计算原谱的页数
+            :: Calculate original score pages (only count original score files)
             set /a "pageCount=0"
-            for %%f in ("%%c\!id!_!title!_*.jpeg" "%%c\!id!_!title!_*.jpg") do (
-                set /a "pageCount+=1"
-            )
-            
-            :: 如果没有找到原谱，可能是文件名格式不同
-            if !pageCount! equ 0 (
-                set /a "pageCount=0"
-                for %%f in ("%%c\!id!_!title!*.jpeg" "%%c\!id!_!title!*.jpg") do (
-                    set "fname=%%~nf"
-                    echo !fname! | find "_" > nul
-                    if !errorlevel! neq 0 (
-                        set /a "pageCount+=1"
-                    )
-                )
-            )
-            
-            echo                     "pages": !pageCount!, >> "%outputFile%"
-            
-            :: 收集所有版本（除了原谱）
-            set "versions="
-            for %%f in ("%%c\!id!_!title!_*_*.jpeg" "%%c\!id!_!title!_*_*.jpg") do (
+            for %%f in ("%%c\!categoryName!_!id!_!title!_*.jpeg" "%%c\!categoryName!_!id!_!title!_*.jpg") do (
                 set "verFile=%%~nf"
-                for /f "tokens=4 delims=_" %%v in ("!verFile!") do (
-                    if not defined versions (
-                        set "versions="%%v""
-                    ) else (
-                        echo !versions! | find "%%v" > nul
-                        if !errorlevel! neq 0 (
-                            set "versions=!versions!,"%%v""
+                :: Check if it's original score file (4 parts: category_ID_title_page)
+                for /f "tokens=1-4 delims=_" %%a in ("!verFile!") do (
+                    set "fileCategory=%%a"
+                    set "fileId=%%b"
+                    set "fileTitle=%%c"
+                    set "filePage=%%d"
+                    
+                    if "!fileId!"=="!id!" if "!fileTitle!"=="!title!" (
+                        :: Check if 4th part is page number
+                        if "!filePage!"=="1" (
+                            set /a "pageCount+=1"
                         )
                     )
                 )
             )
             
-            :: 如果有版本才添加versions字段
+            :: Collect all versions (except original score and numeric pages)
+            set "versions="
+            for %%f in ("%%c\!categoryName!_!id!_!title!_*_*.jpeg" "%%c\!categoryName!_!id!_!title!_*_*.jpg") do (
+                set "verFile=%%~nf"
+                :: Parse version info: format is category_ID_title_version_page
+                for /f "tokens=1-5 delims=_" %%a in ("!verFile!") do (
+                    set "fileCategory=%%a"
+                    set "fileId=%%b"
+                    set "fileTitle=%%c"
+                    set "fileVersion=%%d"
+                    set "filePage=%%e"
+                    
+                    if "!fileId!"=="!id!" if "!fileTitle!"=="!title!" (
+                        :: Check if version name is not numeric
+                        if not "!fileVersion!"=="1" if not "!fileVersion!"=="2" (
+                            :: Not numeric, so it's a version name
+                            if not defined versions (
+                                set "versions="!fileVersion!""
+                            ) else (
+                                echo !versions! | find "!fileVersion!" > nul
+                                if !errorlevel! neq 0 (
+                                    set "versions=!versions!,"!fileVersion!""
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+            
+            :: Add versions field if exists, and decide whether to add comma
             if defined versions (
+                echo                     "pages": !pageCount!, >> "%outputFile%"
                 echo                     "versions": [!versions!] >> "%outputFile%"
+            ) else (
+                echo                     "pages": !pageCount! >> "%outputFile%"
             )
             
             echo                 } >> "%outputFile%"
         )
     )
     
-    :: 结束当前分类的JSON结构
+    :: End current category JSON structure
     echo             } >> "%outputFile%"
     echo         } >> "%outputFile%"
 )
 
-:: 结束整个JSON结构
+:: End entire JSON structure
 echo     } >> "%outputFile%"
 echo } >> "%outputFile%"
 
-echo 已生成 %outputFile% 文件
+echo Generated %outputFile% file
 pause
