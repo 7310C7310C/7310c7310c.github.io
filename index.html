@@ -2290,6 +2290,10 @@
             currentSubCategory: null // 存储当前子分类名称
         };
 
+        // 预加载相关变量
+        let weeklyPreloadTimer = null;
+        let weeklySongsPreloaded = false;
+
         // 本地存储管理
         const storageManager = {
             // 键名
@@ -2951,6 +2955,9 @@
             weeklyView.style.display = 'block';
             historyButton.style.display = 'none';
             document.getElementById('languageButton').style.display = 'none';
+            
+            // 重置预加载状态（当重新进入本周歌曲时）
+            weeklySongsPreloaded = false;
         }
 
         // 显示乐谱
@@ -2973,6 +2980,9 @@
                     category: item.category
                 };
             }).filter(Boolean);
+            
+            // 启动10秒预加载计时器（仅当从本周歌曲进入时）
+            startWeeklyPreloadTimer();
         } else if (categoryView.style.display === 'block') {
             currentState.openedFrom = 'category';
             
@@ -3237,6 +3247,11 @@
                     }
                 }
                 
+                // 取消预加载计时器（如果是从本周歌曲进入的）
+                if (currentState.openedFrom === 'weekly') {
+                    cancelWeeklyPreloadTimer();
+                }
+                
                 showSong(prevSong.category, prevSong);
             }
         }
@@ -3271,6 +3286,11 @@
                     }
                 }
                 
+                // 取消预加载计时器（如果是从本周歌曲进入的）
+                if (currentState.openedFrom === 'weekly') {
+                    cancelWeeklyPreloadTimer();
+                }
+                
                 showSong(nextSong.category, nextSong);
             }
         }
@@ -3281,6 +3301,9 @@
             loadingIndicator.style.display = 'none';
             viewerView.style.display = 'none';
             doodleCanvas.style.display = 'none';
+            
+            // 取消预加载计时器
+            cancelWeeklyPreloadTimer();
             
             // 添加一个状态标记来记录是从哪个界面打开的查看器
             if (currentState.openedFrom === 'weekly') {
@@ -3935,6 +3958,88 @@
 
         // 启动应用
         document.addEventListener('DOMContentLoaded', initApp);
+
+        // 预加载相关函数
+        function startWeeklyPreloadTimer() {
+            // 如果已经预加载过，直接返回
+            if (weeklySongsPreloaded) return;
+            
+            // 清除之前的计时器
+            if (weeklyPreloadTimer) {
+                clearTimeout(weeklyPreloadTimer);
+            }
+            
+            // 设置10秒后预加载
+            weeklyPreloadTimer = setTimeout(() => {
+                preloadWeeklySongs();
+            }, 10000);
+        }
+
+        function cancelWeeklyPreloadTimer() {
+            if (weeklyPreloadTimer) {
+                clearTimeout(weeklyPreloadTimer);
+                weeklyPreloadTimer = null;
+            }
+        }
+
+        function preloadWeeklySongs() {
+            if (weeklySongsPreloaded) return;
+            
+            console.log('开始预加载本周歌曲的优先显示版本歌谱...');
+            
+            // 获取本周歌曲列表
+            const weeklySongs = songsData.weeklySongs.songs;
+            
+            weeklySongs.forEach(item => {
+                const category = songsData.categories[item.category];
+                if (!category) return;
+                
+                const song = category.songs[item.id];
+                if (!song) return;
+                
+                // 确定优先显示版本
+                let preferredVersion = currentState.preferredVersion;
+                
+                // 检查歌曲是否支持优先显示版本
+                const availableVersions = ['原谱', ...(song.versions || [])];
+                if (!availableVersions.includes(preferredVersion)) {
+                    preferredVersion = '原谱'; // 如果不支持，默认使用原谱
+                }
+                
+                // 只为优先显示版本预加载所有页面
+                for (let page = 1; page <= song.pages; page++) {
+                    const img = new Image();
+                    
+                    // 构建图片路径
+                    let base = '';
+                    if (song.filename) {
+                        base = song.filename;
+                        if (!base.startsWith(item.category + '_')) {
+                            base = item.category + '_' + base;
+                        }
+                    } else {
+                        base = `${item.category}_${item.id}_${song.title}`;
+                    }
+                    
+                    let imagePath;
+                    if (preferredVersion === '原谱') {
+                        imagePath = `img/${item.category}/${base}_${page}.jpeg`;
+                    } else {
+                        imagePath = `img/${item.category}/${base}_${preferredVersion}_${page}.jpeg`;
+                    }
+                    
+                    img.src = imagePath;
+                    
+                    // 静默处理加载错误
+                    img.onerror = () => {
+                        // 静默处理，不显示错误
+                    };
+                }
+            });
+            
+            weeklySongsPreloaded = true;
+            console.log('本周歌曲优先显示版本预加载完成');
+        }
 
         // Toast 显示函数
         function showToast(message) {
