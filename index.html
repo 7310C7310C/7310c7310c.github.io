@@ -25,6 +25,424 @@
             transition: background-color 0.3s;
         }
         
+        /* 圣诞主题样式 */
+        body.christmas-theme {
+            background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 50%, #1a472a 100%);
+            color: #ffffff;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        body.christmas-theme::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+                radial-gradient(circle at 80% 40%, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+                radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+                radial-gradient(circle at 90% 90%, rgba(255, 255, 255, 0.1) 2px, transparent 2px);
+            background-size: 100px 100px, 150px 150px, 80px 80px, 120px 120px;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        body.christmas-theme .container {
+            position: relative;
+            z-index: 2;
+        }
+        
+        body.christmas-theme .main-title {
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        body.christmas-theme .christmas-tree-left,
+        body.christmas-theme .christmas-tree-right {
+            font-size: 1.2em;
+            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
+        }
+        
+
+        
+        body.christmas-theme .category-card {
+            background: linear-gradient(145deg, #b22222 0%, #cd5c5c 100%);
+            color: #ffffff;
+            border: 2px solid #ffd700;
+            box-shadow: 0 4px 15px rgba(178, 34, 34, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        body.christmas-theme .category-card::before {
+            content: '❄️';
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.2rem;
+            opacity: 0.7;
+        }
+        
+        body.christmas-theme .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(178, 34, 34, 0.4);
+            border-color: #ffffff;
+        }
+        
+        body.christmas-theme .category-card h2 {
+            color: #ffffff;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        body.christmas-theme .category-card p {
+            color: #ffd700;
+        }
+        
+        body.christmas-theme #weeklyButton.category-card {
+            background: linear-gradient(145deg, #8b0000 0%, #a52a2a 100%);
+            border-color: #ffd700;
+        }
+        
+        body.christmas-theme .song-item {
+            background: linear-gradient(145deg, #b22222 0%, #cd5c5c 100%);
+            color: #ffffff;
+            border: 1px solid #ffd700;
+            box-shadow: 0 2px 8px rgba(178, 34, 34, 0.3);
+        }
+        
+        body.christmas-theme .song-item:hover {
+            background: linear-gradient(145deg, #cd5c5c 0%, #dc143c 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(178, 34, 34, 0.4);
+        }
+        
+        body.christmas-theme .song-number {
+            color: #ffd700;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        body.christmas-theme .song-category {
+            background: linear-gradient(145deg, #ffd700 0%, #ffed4e 100%);
+            color: #8b0000;
+            font-weight: bold;
+        }
+        
+        body.christmas-theme .back-button {
+            background: linear-gradient(145deg, #b22222 0%, #cd5c5c 100%);
+            color: #ffffff;
+            border: 2px solid #ffd700;
+        }
+        
+        body.christmas-theme .back-button:hover {
+            background: linear-gradient(145deg, #cd5c5c 0%, #dc143c 100%);
+            transform: translateY(-2px);
+        }
+        
+        body.christmas-theme #categoryTitle,
+        body.christmas-theme #weeklyTitle {
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        body.christmas-theme .update-date {
+            color: #ffd700;
+        }
+        
+        body.christmas-theme #weeklyButtonDate {
+            color: #ffd700 !important;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        body.christmas-theme .search-input {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #ffd700;
+            color: #8b0000;
+        }
+        
+        body.christmas-theme .search-input:focus {
+            border-color: #ffffff;
+            box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.3);
+        }
+        
+        body.christmas-theme .search-icon {
+            color: #8b0000;
+        }
+        
+        body.christmas-theme .clear-search {
+            color: #8b0000;
+        }
+        
+        body.christmas-theme .version-preference {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #ffd700;
+            backdrop-filter: blur(10px);
+        }
+        
+        body.christmas-theme .version-preference span {
+            color: #ffd700;
+        }
+        
+        body.christmas-theme .version-select {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #ffd700;
+            color: #8b0000;
+        }
+        
+        body.christmas-theme .close-button {
+            background: rgba(139, 0, 0, 0.8);
+            border: 2px solid #ffd700;
+        }
+        
+        body.christmas-theme .close-button:hover {
+            background: rgba(165, 42, 42, 0.9);
+            border-color: #ffffff;
+        }
+        
+        body.christmas-theme .page-controls-container {
+            background: rgba(139, 0, 0, 0.8);
+            border: 2px solid #ffd700;
+        }
+        
+        body.christmas-theme .song-nav {
+            background: rgba(139, 0, 0, 0.6);
+            border: 1px solid #ffd700;
+        }
+        
+        body.christmas-theme .song-nav:hover {
+            background: rgba(165, 42, 42, 0.8);
+            border-color: #ffffff;
+        }
+        
+        body.christmas-theme .version-toggle-button {
+            color: #ffd700;
+            border: 1px solid #ffd700;
+        }
+        
+        body.christmas-theme .version-toggle-button:hover {
+            background: rgba(255, 215, 0, 0.2);
+        }
+        
+        body.christmas-theme .version-buttons {
+            background: rgba(139, 0, 0, 0.9);
+            border: 2px solid #ffd700;
+        }
+        
+        body.christmas-theme .version-button {
+            color: #ffffff;
+            border: 1px solid transparent;
+        }
+        
+        body.christmas-theme .version-button:hover {
+            background: rgba(255, 215, 0, 0.2);
+            border-color: #ffd700;
+        }
+        
+        body.christmas-theme .version-button.active {
+            background: rgba(255, 215, 0, 0.3);
+            border-color: #ffd700;
+        }
+        
+        /* 历史面板圣诞主题样式 */
+        body.christmas-theme .history-panel-container {
+            background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 50%, #1a472a 100%) !important;
+            border: 2px solid #ffd700 !important;
+            backdrop-filter: blur(10px);
+        }
+        
+        body.christmas-theme .history-panel-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+                radial-gradient(circle at 80% 40%, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+                radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+                radial-gradient(circle at 90% 90%, rgba(255, 255, 255, 0.1) 2px, transparent 2px);
+            background-size: 100px 100px, 150px 150px, 80px 80px, 120px 120px;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        body.christmas-theme .history-panel-title {
+            color: #ffd700 !important;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5) !important;
+        }
+        
+        body.christmas-theme .history-tabs {
+            background: rgba(26, 71, 42, 0.8) !important;
+            border-bottom: 2px solid #ffd700 !important;
+        }
+        
+        body.christmas-theme .history-tab {
+            color: #ffffff !important;
+            background: transparent !important;
+            border: 1px solid transparent !important;
+        }
+        
+        body.christmas-theme .history-tab.active {
+            background: rgba(255, 215, 0, 0.3) !important;
+            border-color: #ffd700 !important;
+            color: #ffd700 !important;
+        }
+        
+        body.christmas-theme .history-tab:hover {
+            background: rgba(255, 215, 0, 0.2) !important;
+            border-color: #ffd700 !important;
+        }
+        
+        body.christmas-theme .history-panel-close {
+            color: #ffd700 !important;
+        }
+        
+        body.christmas-theme .history-panel-close:hover {
+            background-color: rgba(255, 215, 0, 0.2) !important;
+        }
+        
+        body.christmas-theme .section-title {
+            color: #ffd700;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        body.christmas-theme .history-item {
+            background: linear-gradient(145deg, #b22222 0%, #cd5c5c 100%);
+            color: #ffffff;
+            border: 1px solid #ffd700;
+            box-shadow: 0 2px 8px rgba(178, 34, 34, 0.3);
+        }
+        
+        body.christmas-theme .history-item:hover {
+            background: linear-gradient(145deg, #cd5c5c 0%, #dc143c 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(178, 34, 34, 0.4);
+        }
+        
+        body.christmas-theme .clear-button {
+            background: linear-gradient(145deg, #b22222 0%, #cd5c5c 100%);
+            color: #ffffff;
+            border: 2px solid #ffd700;
+        }
+        
+        body.christmas-theme .clear-button:hover {
+            background: linear-gradient(145deg, #cd5c5c 0%, #dc143c 100%);
+            transform: translateY(-2px);
+        }
+        
+        /* 语言切换按钮和历史按钮圣诞主题样式 */
+        body.christmas-theme #languageButton {
+            background: linear-gradient(145deg, #b22222 0%, #cd5c5c 100%);
+            color: #ffffff;
+            border: 2px solid #ffd700;
+        }
+        
+        body.christmas-theme #languageButton:hover {
+            background: linear-gradient(145deg, #cd5c5c 0%, #dc143c 100%);
+            transform: translateY(-2px);
+        }
+        
+        body.christmas-theme #historyButton {
+            background: linear-gradient(145deg, #b22222 0%, #cd5c5c 100%);
+            color: #ffffff;
+            border: 2px solid #ffd700;
+        }
+        
+        body.christmas-theme #historyButton:hover {
+            background: linear-gradient(145deg, #cd5c5c 0%, #dc143c 100%);
+            transform: translateY(-2px);
+        }
+        
+        body.christmas-theme .empty-list-message {
+            color: #ffd700;
+        }
+        
+        /* 搜索结果显示圣诞主题样式 */
+        body.christmas-theme .search-results-title {
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        body.christmas-theme .no-results {
+            color: #ffd700;
+        }
+        
+        /* 加载指示器圣诞主题样式 */
+        body.christmas-theme .loading-indicator {
+            background: rgba(139, 0, 0, 0.9);
+            border: 2px solid #ffd700;
+            color: #ffd700;
+        }
+        
+        /* 版本选择模态框圣诞主题样式 */
+        body.christmas-theme #version-modal {
+            background: rgba(0, 0, 0, 0.8) !important;
+        }
+        
+        body.christmas-theme #version-modal .modal-content {
+            background: linear-gradient(145deg, #b22222 0%, #cd5c5c 100%) !important;
+            border: 3px solid #ffd700 !important;
+            color: #ffffff !important;
+        }
+        
+        body.christmas-theme #version-modal .modal-title {
+            color: #ffd700 !important;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5) !important;
+        }
+        
+        body.christmas-theme #version-modal button {
+            background: linear-gradient(145deg, #8b0000 0%, #a52a2a 100%) !important;
+            color: #ffffff !important;
+            border: 2px solid #ffd700 !important;
+        }
+        
+        body.christmas-theme #version-modal button:hover {
+            background: linear-gradient(145deg, #a52a2a 0%, #b22222 100%) !important;
+            transform: translateY(-2px) !important;
+        }
+        
+        /* 圣诞装饰浮动动画 */
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-10px) rotate(5deg);
+            }
+        }
+        
+        /* 重新设计的下雪动画 */
+        @keyframes snowfall {
+            0% {
+                transform: translateY(-10px) translateX(0px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) translateX(var(--drift-x)) rotate(var(--rotation));
+                opacity: 0;
+            }
+        }
+        
+
+        
+        /* 重新设计的雪花样式 */
+        body.christmas-theme .snowflake {
+            position: fixed;
+            color: white;
+            pointer-events: none;
+            z-index: 1;
+            animation: snowfall linear forwards;
+            opacity: 1;
+        }
+        
         .container {
             max-width: 1000px;
             margin: 0 auto;
@@ -1180,7 +1598,11 @@
     <div class="toast-container" id="toastContainer"></div>
     <!-- 主界面 -->
     <div id="main-view" class="container">
-        <h1 class="main-title">复活计划乐队</h1>
+        <h1 class="main-title">
+            <span class="christmas-tree-left">🎄</span>
+            复活计划乐队
+            <span class="christmas-tree-right">🎄</span>
+        </h1>
         
         <div class="search-container">
             <div class="search-box">
@@ -2506,6 +2928,9 @@
             // 初始化本地存储
             storageManager.initialize();
             
+            // 初始化主题设置
+            initTheme();
+            
             // 初始化语言设置
             initLanguage();
             
@@ -2526,6 +2951,220 @@
                 `${t('updateDate')}${songsData.weeklySongs.updateDate}`;
             
             showVersionModal();
+        }
+        
+        // 初始化主题设置
+        function initTheme() {
+            // 优先检查URL参数，如果存在?theme=1，以此为准
+            const urlParams = new URLSearchParams(window.location.search);
+            const themeParam = urlParams.get('theme');
+            
+            if (themeParam === '1') {
+                // URL参数为1，强制启用圣诞主题
+                document.body.classList.add('christmas-theme');
+                addChristmasDecorations();
+            } else {
+                // 没有URL参数或参数不为1，检查HTML中的类
+                if (document.body.classList.contains('christmas-theme')) {
+                    // 如果HTML中已经有圣诞主题类，启用圣诞主题
+                    addChristmasDecorations();
+                } else {
+                    // 确保移除圣诞主题
+                    document.body.classList.remove('christmas-theme');
+                    removeChristmasDecorations();
+                }
+            }
+        }
+        
+        // 添加圣诞装饰
+        function addChristmasDecorations() {
+            // 添加圣诞装饰元素
+            const decorations = [
+                { emoji: '🎅', position: 'top-left' },
+                { emoji: '🦌', position: 'top-right' },
+                { emoji: '🎁', position: 'bottom-left' },
+                { emoji: '⛄', position: 'bottom-right' }
+            ];
+            
+            decorations.forEach((decoration, index) => {
+                const decorElement = document.createElement('div');
+                decorElement.className = 'christmas-decoration';
+                decorElement.textContent = decoration.emoji;
+                decorElement.style.cssText = `
+                    position: fixed;
+                    font-size: 2rem;
+                    z-index: 1000;
+                    pointer-events: none;
+                    animation: float 3s ease-in-out infinite;
+                    animation-delay: ${index * 0.5}s;
+                `;
+                
+                switch (decoration.position) {
+                    case 'top-left':
+                        decorElement.style.top = '80px';
+                        decorElement.style.left = '80px';
+                        break;
+                    case 'top-right':
+                        decorElement.style.top = '80px';
+                        decorElement.style.right = '80px';
+                        break;
+                    case 'bottom-left':
+                        decorElement.style.bottom = '80px';
+                        decorElement.style.left = '80px';
+                        break;
+                    case 'bottom-right':
+                        decorElement.style.bottom = '80px';
+                        decorElement.style.right = '80px';
+                        break;
+                }
+                
+                document.body.appendChild(decorElement);
+            });
+            
+            // 确保标题有圣诞树装饰
+            ensureChristmasTrees();
+            
+            // 添加独立雪花
+            addSnowflakes();
+        }
+        
+        // 确保标题有圣诞树装饰
+        function ensureChristmasTrees() {
+            const mainTitle = document.querySelector('.main-title');
+            if (mainTitle && !mainTitle.querySelector('.christmas-tree-left')) {
+                // 如果还没有圣诞树，添加它们
+                const leftTree = document.createElement('span');
+                leftTree.className = 'christmas-tree-left';
+                leftTree.textContent = '🎄';
+                
+                const rightTree = document.createElement('span');
+                rightTree.className = 'christmas-tree-right';
+                rightTree.textContent = '🎄';
+                
+                // 清空标题内容并重新构建
+                const titleText = mainTitle.textContent || t('mainTitle');
+                mainTitle.innerHTML = '';
+                mainTitle.appendChild(leftTree);
+                mainTitle.appendChild(document.createTextNode(titleText));
+                mainTitle.appendChild(rightTree);
+            }
+        }
+        
+        // 重新设计的动态下雪系统
+        let snowflakeInterval;
+        
+        function addSnowflakes() {
+            const snowflakes = ['❄', '❅', '❆', '❄', '❅'];
+            const snowflakeContainer = document.createElement('div');
+            snowflakeContainer.className = 'snowflake-container';
+            document.body.appendChild(snowflakeContainer);
+            
+            // 开始动态生成雪花
+            snowflakeInterval = setInterval(() => {
+                createSnowflake(snowflakeContainer, snowflakes);
+            }, 200); // 每200ms生成一个雪花
+        }
+        
+        function createSnowflake(container, snowflakes) {
+            const snowflake = document.createElement('div');
+            snowflake.className = 'snowflake';
+            snowflake.textContent = snowflakes[Math.floor(Math.random() * snowflakes.length)];
+            
+            // 随机大小 (6px - 14px)
+            const size = Math.random() * 8 + 6;
+            snowflake.style.fontSize = size + 'px';
+            
+            // 随机起始位置 (屏幕顶部)
+            snowflake.style.left = Math.random() * 120 - 10 + '%'; // -10%到110%
+            snowflake.style.top = '-10px';
+            
+            // 随机动画时长 (4s - 12s)
+            const duration = Math.random() * 8 + 4;
+            snowflake.style.animationDuration = duration + 's';
+            
+            // 随机水平漂移
+            const driftX = (Math.random() - 0.5) * 100; // -50px到50px
+            snowflake.style.setProperty('--drift-x', driftX + 'px');
+            
+            // 随机旋转
+            const rotation = Math.random() * 360;
+            snowflake.style.setProperty('--rotation', rotation + 'deg');
+            
+            container.appendChild(snowflake);
+            
+            // 动画结束后移除雪花
+            setTimeout(() => {
+                if (snowflake.parentNode) {
+                    snowflake.parentNode.removeChild(snowflake);
+                }
+            }, duration * 1000);
+        }
+        
+        // 隐藏圣诞装饰（在查看乐谱时）
+        function hideChristmasDecorations() {
+            const decorations = document.querySelectorAll('.christmas-decoration');
+            decorations.forEach(decor => {
+                decor.style.display = 'none';
+            });
+            
+            // 停止动态生成雪花
+            if (snowflakeInterval) {
+                clearInterval(snowflakeInterval);
+                snowflakeInterval = null;
+            }
+            
+            // 隐藏雪花
+            const snowflakeContainer = document.querySelector('.snowflake-container');
+            if (snowflakeContainer) {
+                snowflakeContainer.style.display = 'none';
+            }
+        }
+        
+        // 显示圣诞装饰（离开乐谱查看时）
+        function showChristmasDecorations() {
+            const decorations = document.querySelectorAll('.christmas-decoration');
+            decorations.forEach(decor => {
+                decor.style.display = 'block';
+            });
+            
+            // 重新开始动态生成雪花
+            const snowflakeContainer = document.querySelector('.snowflake-container');
+            if (snowflakeContainer && !snowflakeInterval) {
+                const snowflakes = ['❄', '❅', '❆', '❄', '❅'];
+                snowflakeInterval = setInterval(() => {
+                    createSnowflake(snowflakeContainer, snowflakes);
+                }, 200);
+            }
+            
+            // 显示雪花
+            if (snowflakeContainer) {
+                snowflakeContainer.style.display = 'block';
+            }
+        }
+        
+        // 移除圣诞装饰
+        function removeChristmasDecorations() {
+            const decorations = document.querySelectorAll('.christmas-decoration');
+            decorations.forEach(decor => decor.remove());
+            
+            // 移除标题中的圣诞树
+            const mainTitle = document.querySelector('.main-title');
+            if (mainTitle) {
+                const titleText = mainTitle.textContent || t('mainTitle');
+                mainTitle.innerHTML = titleText;
+            }
+            
+            // 停止动态生成雪花
+            if (snowflakeInterval) {
+                clearInterval(snowflakeInterval);
+                snowflakeInterval = null;
+            }
+            
+            // 移除雪花容器
+            const snowflakeContainer = document.querySelector('.snowflake-container');
+            if (snowflakeContainer) {
+                snowflakeContainer.remove();
+            }
         }
 
         // 初始化语言设置
@@ -2560,8 +3199,20 @@
         
         // 应用翻译到UI
         function applyTranslations() {
-            // 更新主标题
-            document.querySelector('.main-title').textContent = t('mainTitle');
+            // 更新主标题（保持圣诞树装饰）
+            const mainTitle = document.querySelector('.main-title');
+            if (mainTitle) {
+                const leftTree = mainTitle.querySelector('.christmas-tree-left');
+                const rightTree = mainTitle.querySelector('.christmas-tree-right');
+                
+                // 清空标题内容
+                mainTitle.innerHTML = '';
+                
+                // 重新添加圣诞树和翻译后的文本
+                if (leftTree) mainTitle.appendChild(leftTree);
+                mainTitle.appendChild(document.createTextNode(t('mainTitle')));
+                if (rightTree) mainTitle.appendChild(rightTree);
+            }
             
             // 更新搜索框
             searchInput.placeholder = t('searchPlaceholder');
@@ -3077,6 +3728,11 @@
             // 无论从哪个界面打开，在查看乐谱时都隐藏历史按钮
             historyButton.style.display = 'none';
             
+            // 在查看乐谱时隐藏圣诞装饰
+            if (document.body.classList.contains('christmas-theme')) {
+                hideChristmasDecorations();
+            }
+            
             // 滚动到顶部
             document.querySelector('.viewer-content').scrollTop = 0;
             
@@ -3414,6 +4070,11 @@
             // 退出时恢复图片适应模式为宽度适应
             isFitHeight = false;
             updateSheetFitMode();
+            
+            // 离开乐谱查看时显示圣诞装饰
+            if (document.body.classList.contains('christmas-theme')) {
+                showChristmasDecorations();
+            }
         }
 
         // 设置事件监听器
