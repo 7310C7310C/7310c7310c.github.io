@@ -4973,6 +4973,9 @@
             // 版本菜单
             versionButtonsContainer.style.pointerEvents = disabled ? 'none' : '';
             versionButtonsContainer.style.opacity = disabled ? '0.4' : '';
+            // 全屏切换按钮
+            fitModeBtn.disabled = disabled;
+            fitModeBtn.style.opacity = disabled ? '0.4' : '';
         }
         // 生成当前图片的唯一key
         function getDoodleKey() {
