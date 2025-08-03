@@ -2992,13 +2992,19 @@
             // 特殊处理：如果是从子分类视图点击了歌曲，保持isSubCategoryView标记
             // 这样在使用键盘上下键导航时可以知道是在子分类视图中
             
-            // 设置当前歌曲列表为当前分类下的歌曲
-            const category = songsData.categories[categoryName];
-            currentState.currentSongList = Object.keys(category.songs).map(id => ({
-                ...category.songs[id],
-                id,
-                category: categoryName
-            }));
+            // 如果是从子分类视图进入，保持当前子分类的歌曲列表
+            if (currentState.isSubCategoryView && currentState.currentSubCategory) {
+                // 保持当前子分类的歌曲列表，不重新设置
+                // currentState.currentSongList 已经在 showSubCategory 中设置
+            } else {
+                // 设置当前歌曲列表为当前分类下的歌曲
+                const category = songsData.categories[categoryName];
+                currentState.currentSongList = Object.keys(category.songs).map(id => ({
+                    ...category.songs[id],
+                    id,
+                    category: categoryName
+                }));
+            }
         } else if (searchResults.classList.contains('show')) {
             currentState.openedFrom = 'search';
             // 搜索列表已经在performSearch中设置
@@ -3201,6 +3207,47 @@
                 song => song.id === currentState.currentSong.id && song.category === currentState.currentCategory
             );
             
+            // 如果在子分类视图中，需要过滤出当前子分类的歌曲
+            let filteredSongList = currentState.currentSongList;
+            if (currentState.isSubCategoryView && currentState.currentSubCategory) {
+                const getCurrentPrefix = (title) => {
+                    if (title.startsWith('甲年')) return '甲年';
+                    if (title.startsWith('乙年')) return '乙年';
+                    if (title.startsWith('丙年')) return '丙年';
+                    return 'other'; // 通用类别
+                };
+                
+                const currentPrefix = getCurrentPrefix(currentState.currentSong.title);
+                filteredSongList = currentState.currentSongList.filter(song => {
+                    const songPrefix = getCurrentPrefix(song.title);
+                    return songPrefix === currentPrefix;
+                });
+                
+                // 重新计算在当前子分类中的索引
+                const subCategoryIndex = filteredSongList.findIndex(
+                    song => song.id === currentState.currentSong.id && song.category === currentState.currentCategory
+                );
+                
+                // 上一首按钮状态
+                if (subCategoryIndex > 0) {
+                    prevSongButton.classList.remove('disabled');
+                    prevSongButton.style.opacity = '0.7';
+                } else {
+                    prevSongButton.classList.add('disabled');
+                    prevSongButton.style.opacity = '0.3';
+                }
+                
+                // 下一首按钮状态
+                if (subCategoryIndex < filteredSongList.length - 1) {
+                    nextSongButton.classList.remove('disabled');
+                    nextSongButton.style.opacity = '0.7';
+                } else {
+                    nextSongButton.classList.add('disabled');
+                    nextSongButton.style.opacity = '0.3';
+                }
+                return;
+            }
+            
             // 上一首按钮状态
             if (currentIndex > 0) {
                 prevSongButton.classList.remove('disabled');
@@ -3224,31 +3271,35 @@
         function goToPrevSong() {
             if (!currentState.currentSongList || currentState.currentSongList.length === 0) return;
             
-            const currentIndex = currentState.currentSongList.findIndex(
-                song => song.id === currentState.currentSong.id && song.category === currentState.currentCategory
-            );
+            // 如果在子分类视图中，需要过滤出当前子分类的歌曲
+            let filteredSongList = currentState.currentSongList;
+            let currentIndex;
+            
+            if (currentState.isSubCategoryView && currentState.currentSubCategory) {
+                const getCurrentPrefix = (title) => {
+                    if (title.startsWith('甲年')) return '甲年';
+                    if (title.startsWith('乙年')) return '乙年';
+                    if (title.startsWith('丙年')) return '丙年';
+                    return 'other'; // 通用类别
+                };
+                
+                const currentPrefix = getCurrentPrefix(currentState.currentSong.title);
+                filteredSongList = currentState.currentSongList.filter(song => {
+                    const songPrefix = getCurrentPrefix(song.title);
+                    return songPrefix === currentPrefix;
+                });
+                
+                currentIndex = filteredSongList.findIndex(
+                    song => song.id === currentState.currentSong.id && song.category === currentState.currentCategory
+                );
+            } else {
+                currentIndex = currentState.currentSongList.findIndex(
+                    song => song.id === currentState.currentSong.id && song.category === currentState.currentCategory
+                );
+            }
             
             if (currentIndex > 0) {
-                const prevSong = currentState.currentSongList[currentIndex - 1];
-                
-                // 如果当前在子分类视图中，确保只在同一子分类内导航
-                if (viewerView.style.display === 'flex' && currentState.isSubCategoryView && currentState.openedFrom === 'category') {
-                    // 提取当前显示的歌曲标题的前缀（甲年/乙年/丙年）
-                    const getCurrentPrefix = (title) => {
-                        if (title.startsWith('甲年')) return '甲年';
-                        if (title.startsWith('乙年')) return '乙年';
-                        if (title.startsWith('丙年')) return '丙年';
-                        return 'other'; // 通用类别
-                    };
-                    
-                    const currentPrefix = getCurrentPrefix(currentState.currentSong.title);
-                    const prevPrefix = getCurrentPrefix(prevSong.title);
-                    
-                    // 如果前缀不同，则不允许导航
-                    if (currentPrefix !== prevPrefix) {
-                        return;
-                    }
-                }
+                const prevSong = filteredSongList[currentIndex - 1];
                 
                 // 取消预加载计时器（如果是从本周歌曲进入的）
                 if (currentState.openedFrom === 'weekly') {
@@ -3263,31 +3314,35 @@
         function goToNextSong() {
             if (!currentState.currentSongList || currentState.currentSongList.length === 0) return;
             
-            const currentIndex = currentState.currentSongList.findIndex(
-                song => song.id === currentState.currentSong.id && song.category === currentState.currentCategory
-            );
+            // 如果在子分类视图中，需要过滤出当前子分类的歌曲
+            let filteredSongList = currentState.currentSongList;
+            let currentIndex;
             
-            if (currentIndex < currentState.currentSongList.length - 1) {
-                const nextSong = currentState.currentSongList[currentIndex + 1];
+            if (currentState.isSubCategoryView && currentState.currentSubCategory) {
+                const getCurrentPrefix = (title) => {
+                    if (title.startsWith('甲年')) return '甲年';
+                    if (title.startsWith('乙年')) return '乙年';
+                    if (title.startsWith('丙年')) return '丙年';
+                    return 'other'; // 通用类别
+                };
                 
-                // 如果当前在子分类视图中，确保只在同一子分类内导航
-                if (viewerView.style.display === 'flex' && currentState.isSubCategoryView && currentState.openedFrom === 'category') {
-                    // 提取当前显示的歌曲标题的前缀（甲年/乙年/丙年）
-                    const getCurrentPrefix = (title) => {
-                        if (title.startsWith('甲年')) return '甲年';
-                        if (title.startsWith('乙年')) return '乙年';
-                        if (title.startsWith('丙年')) return '丙年';
-                        return 'other'; // 通用类别
-                    };
-                    
-                    const currentPrefix = getCurrentPrefix(currentState.currentSong.title);
-                    const nextPrefix = getCurrentPrefix(nextSong.title);
-                    
-                    // 如果前缀不同，则不允许导航
-                    if (currentPrefix !== nextPrefix) {
-                        return;
-                    }
-                }
+                const currentPrefix = getCurrentPrefix(currentState.currentSong.title);
+                filteredSongList = currentState.currentSongList.filter(song => {
+                    const songPrefix = getCurrentPrefix(song.title);
+                    return songPrefix === currentPrefix;
+                });
+                
+                currentIndex = filteredSongList.findIndex(
+                    song => song.id === currentState.currentSong.id && song.category === currentState.currentCategory
+                );
+            } else {
+                currentIndex = currentState.currentSongList.findIndex(
+                    song => song.id === currentState.currentSong.id && song.category === currentState.currentCategory
+                );
+            }
+            
+            if (currentIndex < filteredSongList.length - 1) {
+                const nextSong = filteredSongList[currentIndex + 1];
                 
                 // 取消预加载计时器（如果是从本周歌曲进入的）
                 if (currentState.openedFrom === 'weekly') {
