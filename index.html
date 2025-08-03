@@ -71,6 +71,17 @@
             filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
         }
         
+        /* 默认隐藏圣诞树，只在圣诞主题时显示 */
+        .christmas-tree-left,
+        .christmas-tree-right {
+            display: none;
+        }
+        
+        body.christmas-theme .christmas-tree-left,
+        body.christmas-theme .christmas-tree-right {
+            display: inline;
+        }
+        
 
         
         body.christmas-theme .category-card {
@@ -1598,11 +1609,7 @@
     <div class="toast-container" id="toastContainer"></div>
     <!-- 主界面 -->
     <div id="main-view" class="container">
-        <h1 class="main-title">
-            <span class="christmas-tree-left">🎄</span>
-            复活计划乐队
-            <span class="christmas-tree-right">🎄</span>
-        </h1>
+        <h1 class="main-title">复活计划乐队</h1>
         
         <div class="search-container">
             <div class="search-box">
@@ -3041,8 +3048,10 @@
                 rightTree.className = 'christmas-tree-right';
                 rightTree.textContent = '🎄';
                 
-                // 清空标题内容并重新构建
+                // 获取当前标题文本
                 const titleText = mainTitle.textContent || t('mainTitle');
+                
+                // 清空标题内容并重新构建
                 mainTitle.innerHTML = '';
                 mainTitle.appendChild(leftTree);
                 mainTitle.appendChild(document.createTextNode(titleText));
@@ -3150,8 +3159,15 @@
             // 移除标题中的圣诞树
             const mainTitle = document.querySelector('.main-title');
             if (mainTitle) {
+                // 获取纯文本内容（不包含圣诞树）
                 const titleText = mainTitle.textContent || t('mainTitle');
-                mainTitle.innerHTML = titleText;
+                // 移除所有圣诞树元素，只保留文本
+                const treeElements = mainTitle.querySelectorAll('.christmas-tree-left, .christmas-tree-right');
+                treeElements.forEach(element => element.remove());
+                // 确保标题只包含文本
+                if (!mainTitle.textContent.trim()) {
+                    mainTitle.textContent = titleText;
+                }
             }
             
             // 停止动态生成雪花
