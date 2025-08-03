@@ -224,17 +224,16 @@
         
         body.christmas-theme .song-nav {
             background: rgba(139, 0, 0, 0.6);
-            border: 1px solid #ffd700;
+            border: none;
         }
         
         body.christmas-theme .song-nav:hover {
             background: rgba(165, 42, 42, 0.8);
-            border-color: #ffffff;
         }
         
         body.christmas-theme .version-toggle-button {
             color: #ffd700;
-            border: 1px solid #ffd700;
+            border: none;
         }
         
         body.christmas-theme .version-toggle-button:hover {
@@ -313,11 +312,14 @@
         }
         
         body.christmas-theme .history-panel-close {
-            color: #ffd700 !important;
+            background: linear-gradient(145deg, #b22222 0%, #cd5c5c 100%) !important;
+            color: #ffffff !important;
+            border: 2px solid #ffd700 !important;
         }
         
         body.christmas-theme .history-panel-close:hover {
-            background-color: rgba(255, 215, 0, 0.2) !important;
+            background: linear-gradient(145deg, #cd5c5c 0%, #dc143c 100%) !important;
+            transform: translateY(-2px) !important;
         }
         
         body.christmas-theme .section-title {
@@ -388,8 +390,6 @@
         
         /* 加载指示器圣诞主题样式 */
         body.christmas-theme .loading-indicator {
-            background: rgba(139, 0, 0, 0.9);
-            border: 2px solid #ffd700;
             color: #ffd700;
         }
         
@@ -676,6 +676,7 @@
             min-width: 60px;
             justify-content: center;
             height: 28px;
+            border: none;
         }
         
         .song-nav:hover {
@@ -1291,22 +1292,23 @@
         }
         
         .history-panel-close {
-            background: none;
+            background-color: rgba(140, 106, 77, 0.7);
             border: none;
-            color: #8c6a4d;
+            color: white;
             font-size: 1.5rem;
             cursor: pointer;
-            width: 30px;
-            height: 30px;
+            width: 45px;
+            height: 45px;
             display: flex;
             justify-content: center;
             align-items: center;
             border-radius: 50%;
-            transition: background-color 0.2s;
+            transition: background-color 0.2s, transform 0.2s;
         }
         
         .history-panel-close:hover {
-            background-color: rgba(140, 106, 77, 0.1);
+            background-color: rgba(140, 106, 77, 0.9);
+            transform: scale(1.05);
         }
         
         .history-panel-content {
