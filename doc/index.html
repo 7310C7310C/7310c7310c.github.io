@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>核心匹配算法 - 接口需求文档 v1.0</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 960px;
+            margin: 20px auto;
+            padding: 0 20px;
+            background-color: #fdfdfd;
+        }
+        nav {
+            background-color: #f3f3f3;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border: 1px solid #e0e0e0;
+        }
+        nav h3 {
+            margin-top: 0;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 5px;
+        }
+        nav ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        nav ul li a {
+            text-decoration: none;
+            color: #0056b3;
+        }
+        nav ul li a:hover {
+            text-decoration: underline;
+        }
+        nav ul ul {
+            padding-left: 20px;
+        }
+        h1, h2, h3, h4 {
+            color: #2c3e50;
+            border-bottom: 1px solid #eaecef;
+            padding-bottom: 0.3em;
+        }
+        h1 { font-size: 2em; }
+        h2 { font-size: 1.75em; }
+        h3 { font-size: 1.5em; }
+        h4 { font-size: 1.25em; border-bottom: none;}
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            display: block;
+            overflow-x: auto;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        pre {
+            background-color: #2d2d2d;
+            color: #ccc;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        code {
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+        }
+        .note {
+            background-color: #fff9e6;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>核心匹配算法 - 接口需求文档 v1.0</h1>
+        <p><strong>版本：</strong> 1.0 | <strong>更新日期：</strong> 2025年8月11日</p>
+    </header>
+
+    <nav>
+        <h3>文档导航</h3>
+        <ul>
+            <li><a href="#section1">1. 文档概述</a>
+                <ul>
+                    <li><a href="#section1-1">1.1. 目的</a></li>
+                    <li><a href="#section1-2">1.2. 核心逻辑概述</a></li>
+                    <li><a href="#section1-3">1.3. 接口类型</a></li>
+                </ul>
+            </li>
+            <li><a href="#section2">2. 函数接口定义</a></li>
+            <li><a href="#section3">3. 数据结构</a>
+                <ul>
+                    <li><a href="#section3-1">3.1. 输入数据</a></li>
+                    <li><a href="#section3-2">3.2. 输出数据</a></li>
+                </ul>
+            </li>
+            <li><a href="#section4">4. 核心业务逻辑与规则</a>
+                <ul>
+                    <li><a href="#section4-1">4.1. 分组优先级顺序</a></li>
+                    <li><a href="#section4-2">4.2. 媒人推荐处理规则</a></li>
+                    <li><a href="#section4-3">4.3. 异常与边界情况</a></li>
+                </ul>
+            </li>
+            <li><a href="#section5">5. 交付要求</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section id="section1">
+            <h2>1. 文档概述</h2>
+            <h3 id="section1-1">1.1. 目的</h3>
+            <p>定义核心分组算法模块的技术接口与数据结构。</p>
+
+            <h3 id="section1-2">1.2. 核心逻辑概述</h3>
+            <p>根据一系列预设规则，将输入的全体参与者（男女）自动分配到若干个固定大小的小组（例如 4 男 4 女）中。分组的优先级依据参与者之间的<strong>互选情况、单向选择优先级、以及“媒人”的推荐</strong>。</p>
+
+            <h3 id="section1-3">1.3. 接口类型</h3>
+            <p>接口为<strong>本地库</strong>，非 HTTP 网络接口。</p>
+        </section>
+
+        <section id="section2">
+            <h2>2. 函数接口定义</h2>
+            <p>算法模块为一个独立的、可调用的函数。</p>
+            <pre><code>/**
+ * 核心匹配算法函数
+ * @param {Array&lt;Object&gt;} participants - 参与者列表, 包含所有参与者的基础信息。
+ * @param {Object} selections - 用户的选择数据对象。
+ * @param {Array&lt;Object&gt;} [matchmaker_picks=null] - (可选) 媒人推荐的配对列表。
+ * @param {Object} [options=null] - (可选) 包含分组规则等参数的配置对象。
+ * @returns {Object} 一个包含分组结果和未分配人员的对象。
+ */
+function calculateGrouping(participants, selections, matchmaker_picks = null, options = null) {
+    // 算法实现...
+    // ...
+    // return grouping_result;
+}
+</code></pre>
+        </section>
+
+        <section id="section3">
+            <h2>3. 数据结构</h2>
+            <h3 id="section3-1">3.1. 输入数据 (Input Data)</h3>
+            
+            <h4>3.1.1. `participants` (参与者列表)</h4>
+            <p><strong>用途：</strong> 本次匹配的全体人员，是算法的数据基础。</p>
+            <table>
+                <thead>
+                    <tr><th>字段名</th><th>类型</th><th>是否必需</th><th>描述</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>id</code></td><td>String</td><td>是</td><td>全局唯一的用户 ID。</td></tr>
+                    <tr><td><code>gender</code></td><td>String</td><td>是</td><td>性别。推荐值为 <code>"male"</code> 或 <code>"female"</code>。</td></tr>
+                    <tr><td><code>name</code></td><td>String</td><td>否</td><td>姓名。主要用于调试和日志记录，不参与核心逻辑。</td></tr>
+                </tbody>
+            </table>
+            <pre><code>// JSON 示例
+[
+  { "id": "m001", "gender": "male", "name": "张三" },
+  { "id": "m002", "gender": "male", "name": "李四" },
+  { "id": "f101", "gender": "female", "name": "王五" },
+  { "id": "f102", "gender": "female", "name": "赵六" }
+]</code></pre>
+
+            <h4>3.1.2. `selections` (用户选择数据)</h4>
+            <p><strong>用途：</strong> 描述所有参与者的选择意向和优先级。</p>
+            <table>
+                <thead>
+                    <tr><th>字段名</th><th>类型</th><th>是否必需</th><th>描述</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>(key)</code></td><td>String</td><td>是</td><td>选择者的 <code>id</code>。</td></tr>
+                    <tr><td><code>id</code></td><td>String</td><td>是</td><td>被选择者的 <code>id</code>。</td></tr>
+                    <tr><td><code>priority</code></td><td>Integer</td><td>是</td><td>选择的优先级。<strong>数字越小，优先级越高</strong> (例如 1~5)。</td></tr>
+                </tbody>
+            </table>
+            <pre><code>// JSON 示例
+{
+  "m001": [
+    { "id": "f101", "priority": 1 },
+    { "id": "f102", "priority": 2 }
+  ],
+  "f101": [
+    { "id": "m001", "priority": 1 }
+  ]
+}</code></pre>
+
+            <h4>3.1.3. `matchmaker_picks` (媒人推荐)</h4>
+            <p><strong>用途：</strong> 包含多位“媒人”给出的推荐配对。媒人推荐有冲突时以主媒人为准（待定）。</p>
+            <table>
+              <thead>
+                  <tr><th>字段名</th><th>类型</th><th>是否必需</th><th>描述</th></tr>
+              </thead>
+              <tbody>
+                  <tr><td><code>person1_id</code></td><td>String</td><td>是</td><td>其中一人的 <code>id</code>。</td></tr>
+                  <tr><td><code>person2_id</code></td><td>String</td><td>是</td><td>另一人的 <code>id</code>。</td></tr>
+                  <tr><td><code>matchmaker_id</code></td><td>String</td><td>是</td><td>做出推荐的媒人ID (例如 <code>"lead_mk"</code>, <code>"assist_A"</code>)。</td></tr>
+                  <tr><td><code>priority</code></td><td>Integer</td><td>是</td><td>推荐的优先级。<strong>数字越小，优先级越高。</strong></td></tr>
+                  <tr><td><code>comment</code></td><td>String</td><td>否</td><td>推荐理由，用于媒人间参考。</td></tr>
+              </tbody>
+            </table>
+            <pre><code>// JSON 示例
+[
+  {
+    "person1_id": "m007",
+    "person2_id": "f101",
+    "matchmaker_id": "lead_mk",
+    "priority": 0, // 主媒人推荐，最高优先级
+    "comment": "主媒人强烈推荐"
+  },
+  {
+    "person1_id": "m007",
+    "person2_id": "f105",
+    "matchmaker_id": "assist_A",
+    "priority": 10, // 副媒人A的推荐
+    "comment": "两人是校友"
+  }
+]</code></pre>
+
+            <h4>3.1.4. `options` (配置选项)</h4>
+            <p><strong>用途：</strong> 传递分组规则等运行时参数。</p>
+            <table>
+              <thead>
+                  <tr><th>字段名</th><th>类型</th><th>是否必需</th><th>描述</th></tr>
+              </thead>
+              <tbody>
+                  <tr><td><code>group_size_male</code></td><td>Integer</td><td>是</td><td>每组的目标男性人数。</td></tr>
+                  <tr><td><code>group_size_female</code></td><td>Integer</td><td>是</td><td>每组的目标女性人数。</td></tr>
+                  <tr><td><code>previous_groups</code></td><td>Array</td><td>否</td><td>（用于多轮匹配） 包含过去已分组配对的 ID 数组，算法应尽力避免这些人再次同组。</td></tr>
+              </tbody>
+            </table>
+            <pre><code>// JSON 示例
+{
+  "group_size_male": 4,
+  "group_size_female": 4,
+  "previous_groups": [
+    ["m001", "f108"],
+    ["m002", "f106"]
+  ]
+}</code></pre>
+
+            <h3 id="section3-2">3.2. 输出数据 (Output Data)</h3>
+            <h4>`grouping_result` (分组结果)</h4>
+            <p><strong>用途：</strong> 函数执行成功后返回的唯一对象，包含所有分组结果和未分配人员。</p>
+            <table>
+              <thead>
+                  <tr><th>字段名</th><th>类型</th><th>描述</th></tr>
+              </thead>
+              <tbody>
+                  <tr><td><code>groups</code></td><td>Array&lt;Object&gt;</td><td>包含所有成功匹配的小组列表。</td></tr>
+                  <tr><td><code>unassigned</code></td><td>Array&lt;Object&gt;</td><td>包含所有未能进入任何分组的人员列表。</td></tr>
+              </tbody>
+            </table>
+            <pre><code>// JSON 示例
+{
+  "groups": [
+    {
+      "group_id": 1,
+      "male_ids": ["m001", "m005", "m008", "m012"],
+      "female_ids": ["f101", "f103", "f109", "f111"]
+    }
+  ],
+  "unassigned": [
+    { "id": "m025", "gender": "male" },
+    { "id": "f131", "gender": "female" }
+  ]
+}</code></pre>
+        </section>
+
+        <section id="section4">
+            <h2>4. 核心业务逻辑与规则</h2>
+            <h3 id="section4-1">4.1. 分组优先级顺序</h3>
+            <p>算法在计算匹配权重时，应遵循以下优先级：</p>
+            <ol>
+                <li><strong>最高优先级：互有好感。</strong> (A 选 B 且 B 选 A)</li>
+                <li><strong>次高优先级：单向好感。</strong> (A 选 B，根据 A 设定的 <code>priority</code> 值计算权重)</li>
+                <li><strong>普通优先级：媒人推荐。</strong> (根据媒人设定的 <code>priority</code> 值计算权重)</li>
+            </ol>
+            
+            <h3 id="section4-2">4.2. 媒人推荐处理规则</h3>
+            <div class="note">
+              <p>当多位媒人对同一个人做出不同推荐时，产生冲突。</p>
+              <ul>
+                  <li>算法必须<strong>优先采纳`priority`值更高（数字更小）的推荐</strong>。</li>
+                  <li><strong><code>priority: 0</code></strong> 应被视为一个保留值，专用于<strong>主媒人</strong>，拥有绝对的、无条件覆盖其他任何推荐的最高权力。（待定）</li>
+              </ul>
+            </div>
+
+            <h3 id="section4-3">4.3. 异常与边界情况</h3>
+            <ul>
+                <li><strong>剩余人员：</strong> 无法满足分组条件（例如 4 男 4 女）的剩余人员，应被全部放入返回结果的 <code>unassigned</code> 列表中。</li>
+                <li><strong>多轮匹配：</strong> 当 <code>options.previous_groups</code> 不为空时，算法应在计算权重时，降低或避免这些已有过交集的配对。</li>
+            </ul>
+        </section>
+    </main>
+
+</body>
+</html>
