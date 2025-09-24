@@ -4209,6 +4209,42 @@
             // 本周歌曲按钮点击事件
             weeklyButton.addEventListener('click', showWeeklySongs);
 
+            // 为"本周歌曲"标题添加彩蛋：点击复制歌曲列表
+            weeklyTitle.addEventListener('click', () => {
+                const songList = songsData.weeklySongs.songs;
+                if (!songList || songList.length === 0) {
+                    showToast('没有可复制的歌曲');
+                    return;
+                }
+
+                let clipboardText = '';
+                try {
+                    songList.forEach(songInfo => {
+                        const category = songInfo.category;
+                        const songId = songInfo.id;
+                        // 确保歌曲数据存在
+                        if (songsData.categories[category] && songsData.categories[category].songs[songId]) {
+                            const title = songsData.categories[category].songs[songId].title;
+                            clipboardText += `${t(category, 'categories')} ${songId} ${title}\n`;
+                        }
+                    });
+
+                    clipboardText = clipboardText.trim();
+
+                    if (clipboardText) {
+                        navigator.clipboard.writeText(clipboardText).then(() => {
+                            showToast('歌曲列表已复制到剪贴板');
+                        }).catch(err => {
+                            console.error('无法复制到剪贴板:', err);
+                            showToast('复制失败');
+                        });
+                    }
+                } catch (error) {
+                    console.error('生成歌曲列表时出错:', error);
+                    showToast('处理歌曲列表时出错');
+                }
+            });
+
             // 语言切换按钮点击事件
             document.getElementById('languageButton').addEventListener('click', () => {
                 toggleLanguage();
@@ -5202,6 +5238,7 @@
             }
             e.preventDefault();
         }, {passive:false});
+
         // 禁用方向键和点击乐谱外区域关闭
         let doodleKeydownHandler = null;
         let doodleViewerClickHandler = null;
