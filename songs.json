@@ -759,17 +759,17 @@
       }
     },
     "weeklySongs": {
-      "updateDate": "2025/10/01",
+      "updateDate": "2025/10/12 ",
       "songs": [
-        {"category": "进堂咏", "id": "005"},
+        {"category": "进堂咏", "id": "004"},
         {"category": "垂怜曲", "id": "001"},
         {"category": "光荣颂", "id": "002"},
-        {"category": "答唱咏（朱健仁）", "id": "205"},
-        {"category": "福音前欢呼", "id": "003"},
-        {"category": "奉献咏", "id": "001"},
+        {"category": "答唱咏（朱健仁）", "id": "206"},
+        {"category": "福音前欢呼", "id": "001"},
+        {"category": "奉献咏", "id": "005"},
         {"category": "天主经", "id": "001"},
-        {"category": "领主咏", "id": "002"},
-        {"category": "礼成咏", "id": "004"}
+        {"category": "领主咏", "id": "013"},
+        {"category": "礼成咏", "id": "013"}
       ]
     }
   }
