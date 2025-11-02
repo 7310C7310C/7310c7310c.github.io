@@ -769,7 +769,7 @@
     "weeklySongs": {
       "updateDate": "2025/11/02",
       "songs": [
-        {"category": "进堂咏", "id": "019"}
+        {"category": "进堂咏", "id": "019"},
         {"category": "答唱咏（朱健仁）", "id": "015"},
         {"category": "福音前欢呼", "id": "003"},
         {"category": "奉献咏", "id": "006"},
