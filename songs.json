@@ -774,11 +774,12 @@
       "updateDate": "2025/11/02",
       "songs": [
         {"category": "进堂咏", "id": "019"},
-        {"category": "答唱咏（朱健仁）", "id": "015"},
+        {"category": "垂怜曲", "id": "002"},
+        {"category": "光荣颂", "id": "002"},
         {"category": "福音前欢呼", "id": "003"},
-        {"category": "奉献咏", "id": "006"},
+        {"category": "奉献咏", "id": "005"},
         {"category": "天主经", "id": "001"},
-        {"category": "领主咏", "id": "012"},
+        {"category": "领主咏", "id": "013"},
         {"category": "礼成咏", "id": "017"}
       ]
     }
