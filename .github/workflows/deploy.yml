@@ -1,0 +1,40 @@
+name: Vita-Plan Automated Deployment
+
+on:
+  push:
+    branches:
+      # 只有推送到 main 分支时才触发部署
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout Repository
+        uses: actions/checkout@v4
+        
+      # -----------------------------------------------------------------
+      # 核心步骤：通过 SSH 连接服务器并执行 Git Pull
+      # -----------------------------------------------------------------
+      - name: 🚀 Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.1
+        with:
+          # 从 GitHub Secrets 中获取连接信息
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          
+          # 执行的部署命令
+          script: |
+            echo "--- Starting deployment for vita-plan ---"
+            
+            # 1. 切换到项目目录
+            cd /var/www/vita-plan
+            
+            # 2. 拉取最新代码 (假设您已经解决了之前的权限问题)
+            git pull origin main
+            
+            # 3. 确保 Nginx 权限仍然正确（预防性措施）
+            sudo chown -R www-data:www-data .
+            
+            echo "--- Deployment finished successfully! ---"
