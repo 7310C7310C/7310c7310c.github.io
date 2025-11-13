@@ -2856,9 +2856,12 @@ function showVersionModal() {
         const btn = document.createElement('button');
         btn.textContent = t(version, 'versions');
         btn.value = version;
-        btn.style = 'padding:10px 0;font-size:1.1rem;border-radius:8px;border:none;background:#8c6a4d;color:#fff;cursor:pointer;transition:background 0.2s;';
-        btn.onmouseenter = function(){btn.style.background='#a07a5a';};
-        btn.onmouseleave = function(){btn.style.background='#8c6a4d';};
+        // 使用类而不是内联样式，方便为“原谱”添加特殊样式
+        btn.className = 'modal-version-btn';
+        // 如果是“原谱”，添加突出显示的类
+        if (version === '原谱') {
+            btn.classList.add('primary-version-btn');
+        }
         btn.onclick = function() {
             currentState.preferredVersion = version;
             renderVersionPreference();
