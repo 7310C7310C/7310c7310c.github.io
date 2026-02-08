@@ -791,17 +791,16 @@
       }
     },
     "weeklySongs": {
-      "updateDate": "2026/02/01",
+      "updateDate": "2026/02/08",
       "songs": [
-        {"category": "进堂咏", "id": "017"},
+        {"category": "进堂咏", "id": "015"},
         {"category": "垂怜曲", "id": "001"},
         {"category": "光荣颂", "id": "002"},
-        {"category": "福音前欢呼", "id": "006"},
-        {"category": "奉献咏", "id": "001"},
+        {"category": "福音前欢呼", "id": "003"},
+        {"category": "奉献咏", "id": "005"},
         {"category": "天主经", "id": "001"},
-        {"category": "领主咏", "id": "010"},
-        {"category": "领主咏", "id": "015"},
-        {"category": "圣诞", "id": "002"}
+        {"category": "领主咏", "id": "012"},
+        {"category": "礼成咏", "id": "019"}
       ]
     }
   }
