@@ -788,6 +788,14 @@
             "pages": 1
           }
         }
+      },
+      "备用": {
+        "songs": {
+          "001": {
+            "title": "当",
+            "pages": 2
+          }
+        }
       }
     },
     "weeklySongs": {
