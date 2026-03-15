@@ -803,14 +803,14 @@
       }
     },
     "weeklySongs": {
-      "updateDate": "2026/03/08",
+      "updateDate": "2026/03/15",
       "songs": [
         {"category": "进堂咏", "id": "012"},
         {"category": "垂怜曲", "id": "002"},
         {"category": "福音前欢呼", "id": "007"},
-        {"category": "奉献咏", "id": "005"},
+        {"category": "奉献咏", "id": "006"},
         {"category": "天主经", "id": "001"},
-        {"category": "领主咏", "id": "008"},
+        {"category": "领主咏", "id": "018"},
         {"category": "礼成咏", "id": "008"}
       ]
     }
