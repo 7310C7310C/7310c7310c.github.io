@@ -815,9 +815,9 @@
       }
     },
     "weeklySongs": {
-      "updateDate": "2026/03/15",
+      "updateDate": "2026/03/29",
       "songs": [
-        {"category": "进堂咏", "id": "012"},
+        {"category": "进堂咏", "id": "013"},
         {"category": "垂怜曲", "id": "002"},
         {"category": "福音前欢呼", "id": "007"},
         {"category": "奉献咏", "id": "006"},
