@@ -828,8 +828,6 @@
         {"category": "天主经", "id": "002"},
         {"category": "领主咏", "id": "009"},
         {"category": "礼成咏", "id": "018"},
-        {"category": "其他", "id": "001"},
-        {"category": "备用", "id": "001"},
         {"category": "圣诞", "id": "003"}
       ]
     }
