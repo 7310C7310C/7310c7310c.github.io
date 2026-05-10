@@ -819,16 +819,18 @@
       }
     },
     "weeklySongs": {
-      "updateDate": "2026/05/10",
+      "updateDate": "2026/05/16 婚配弥撒及结束后节目",
       "songs": [
-        {"category": "进堂咏", "id": "021"},
         {"category": "垂怜曲", "id": "001"},
         {"category": "光荣颂", "id": "002"},
         {"category": "福音前欢呼", "id": "003"},
         {"category": "奉献咏", "id": "006"},
-        {"category": "天主经", "id": "001"},
+        {"category": "天主经", "id": "002"},
         {"category": "领主咏", "id": "009"},
-        {"category": "礼成咏", "id": "016"}
+        {"category": "礼成咏", "id": "018"},
+        {"category": "其他", "id": "001"},
+        {"category": "备用", "id": "001"},
+        {"category": "圣诞", "id": "003"}
       ]
     }
   }
