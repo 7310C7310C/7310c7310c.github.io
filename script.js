@@ -1,5 +1,5 @@
 // 在文件开头定义版本号和变量
-const jsonVersion = '20260523075700';
+const jsonVersion = '20260528230000';
 let songsData = {};
 
 // 加载数据的函数
@@ -83,7 +83,8 @@ const translations = {
         'versions': {
             '原谱': '原谱',
             '贝司': '贝司',
-            '吉他': '吉他'
+            '吉他': '吉他',
+            '备选': '备选'
         },
         
         // 歌曲数量文本
@@ -143,7 +144,9 @@ const translations = {
             '领主咏': 'Communion',
             '礼成咏': 'Recessional',
             '圣诞': 'Christmas',
-            '圣神': 'Holy Spirit'
+            '圣神': 'Holy Spirit',
+            '备用': 'Reserve',
+            '其他': 'Others'
         },
         
         // 子分类名称
@@ -158,7 +161,8 @@ const translations = {
         'versions': {
             '原谱': 'Original',
             '贝司': 'Bass',
-            '吉他': 'Guitar'
+            '吉他': 'Guitar',
+            '备选': 'Reserve'
         },
         
         // 歌曲数量文本
