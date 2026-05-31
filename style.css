@@ -1150,6 +1150,29 @@ button.category-card {
     stroke: #ff5e5e;
 }
 
+.viewer-breadcrumb {
+    position: fixed;
+    top: 20px;
+    left: 70px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 20px;
+    color: white;
+    font-size: 0.85rem;
+    z-index: 110;
+    white-space: nowrap;
+    max-width: calc(100vw - 160px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 0.85;
+    pointer-events: none;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
+
 /* 收藏项目的取消收藏按钮 */
 .unfavorite-button {
     background: none;
@@ -1199,6 +1222,15 @@ button.category-card {
         height: 35px;
         top: 15px;
         left: 15px;
+    }
+
+    .viewer-breadcrumb {
+        top: 15px;
+        left: 60px;
+        height: 35px;
+        font-size: 0.78rem;
+        padding: 0 10px;
+        max-width: calc(100vw - 130px);
     }
     
     .section-title {

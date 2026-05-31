@@ -394,6 +394,7 @@ const searchResults = document.getElementById('searchResults');
 const searchResultsList = document.getElementById('searchResultsList');
 const clearSearchButton = document.getElementById('clearSearch');
 const favoriteButton = document.getElementById('favoriteButton');
+const viewerBreadcrumb = document.getElementById('viewer-breadcrumb');
 const recentlyViewedContainer = document.getElementById('recentlyViewedContainer');
 const recentlyViewedList = document.getElementById('recentlyViewedList');
 const favoritesList = document.getElementById('favoritesList');
@@ -1211,6 +1212,7 @@ if (weeklyView.style.display === 'block') {
     updatePageIndicator();
     renderVersionButtons();
     updateSongNavButtons();
+    updateBreadcrumb();
     
     // 检查是否已收藏并更新收藏按钮状态
     if (storageManager.isFavorite(song.id, categoryName)) {
@@ -1419,6 +1421,20 @@ function updateSongNavButtons() {
         nextSongButton.classList.add('disabled');
         nextSongButton.style.opacity = '0.3';
     }
+}
+
+function updateBreadcrumb() {
+    if (!viewerBreadcrumb || !currentState.currentSong) return;
+    const cat = t(currentState.currentCategory, 'categories');
+    const id = currentState.currentSong.id;
+    let text;
+    if (currentState.isSubCategoryView && currentState.currentSubCategory) {
+        const sub = t(currentState.currentSubCategory, 'subCategories');
+        text = `${cat} / ${sub} / ${id}`;
+    } else {
+        text = `${cat} / ${id}`;
+    }
+    viewerBreadcrumb.textContent = text;
 }
 
 // 导航到上一首歌曲
