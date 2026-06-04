@@ -652,7 +652,7 @@
           },
           "013": {
             "title": "这是主耶稣的圣体圣血",
-            "pages": 1
+            "pages": 2
           },
           "014": {
             "title": "渔人的渔夫",
@@ -819,16 +819,16 @@
       }
     },
     "weeklySongs": {
-      "updateDate": "2026/05/31",
+      "updateDate": "2026/06/07",
       "songs": [
-        {"category": "进堂咏", "id": "005"},
+        {"category": "进堂咏", "id": "011"},
         {"category": "垂怜曲", "id": "001"},
         {"category": "光荣颂", "id": "002"},
-        {"category": "福音前欢呼", "id": "001"},
-        {"category": "奉献咏", "id": "002"},
+        {"category": "福音前欢呼", "id": "006"},
+        {"category": "奉献咏", "id": "005"},
         {"category": "天主经", "id": "001"},
-        {"category": "领主咏", "id": "010"},
-        {"category": "礼成咏", "id": "016"}
+        {"category": "领主咏", "id": "013"},
+        {"category": "礼成咏", "id": "007"}
       ]
     }
   }
