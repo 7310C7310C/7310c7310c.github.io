@@ -318,13 +318,16 @@ const appState = {
     isNewSong: true,
 };
 
-function addPendingChange(type, description, details) {
+function addPendingChange(type, description, details, dedupKey) {
+    // 如果提供了 dedupKey，移除同一 key 的旧记录（合并同对象的多次编辑）
+    if (dedupKey) {
+        appState.pendingChanges = appState.pendingChanges.filter(c => c._dedupKey !== dedupKey);
+    }
     const existing = appState.pendingChanges.find(c => c.description === description);
     if (!existing) {
-        appState.pendingChanges.push({ type, description, details, time: Date.now() });
+        appState.pendingChanges.push({ type, description, details, time: Date.now(), _dedupKey: dedupKey });
     }
     updatePendingUI();
-    // 持久化到 IndexedDB
     idb.putState('pending_changes', appState.pendingChanges).catch(() => {});
     idb.putState('pending_image_ops', appState.pendingImageOps).catch(() => {});
 }
@@ -339,6 +342,9 @@ async function clearPendingChanges() {
     }
     if (appState.originalIndexHtml) {
         appState.workingIndexHtml = appState.originalIndexHtml;
+        // 恢复主题状态
+        appState.christmasTheme = appState.originalIndexHtml.includes('class="christmas-theme"') ||
+                                  appState.originalIndexHtml.includes("class='christmas-theme'");
     }
     appState.pendingChanges = [];
     appState.pendingImageOps = [];
@@ -347,6 +353,9 @@ async function clearPendingChanges() {
     await idb.putState('pending_changes', []).catch(() => {});
     await idb.putState('pending_image_ops', []).catch(() => {});
     await idb.clearImages().catch(() => {});
+    // 刷新仪表盘以恢复原有显示
+    const dashView = $('dashboardView');
+    if (dashView && dashView.classList.contains('active')) renderDashboard();
 }
 
 async function loadPendingFromIDB() {
@@ -431,8 +440,8 @@ const imageProcessor = {
         let wasCompressed = false;
         if (sizeKB > MAX_IMG_SIZE_KB) {
             wasCompressed = true;
-            let lo = 0.3, hi = quality, bestBlob = blob, bestSize = sizeKB;
-            for (let i = 0; i < 8; i++) {
+            let lo = 0.05, hi = quality, bestBlob = blob, bestSize = sizeKB;
+            for (let i = 0; i < 10; i++) {
                 const mid = (lo + hi) / 2;
                 const testBlob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', mid));
                 const testSize = testBlob.size / 1024;
@@ -445,8 +454,15 @@ const imageProcessor = {
                     if (testSize > bestSize && testSize <= MAX_IMG_SIZE_KB) { bestBlob = testBlob; bestSize = testSize; }
                 }
             }
-            blob = bestBlob;
-            sizeKB = bestSize;
+            // 如果仍然超过阈值，取最后一次小于阈值的尝试，或强制使用最低质量
+            if (bestSize > MAX_IMG_SIZE_KB) {
+                const finalBlob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.05));
+                blob = finalBlob;
+                sizeKB = finalBlob.size / 1024;
+            } else {
+                blob = bestBlob;
+                sizeKB = bestSize;
+            }
         }
         return { blob, sizeKB: Math.round(sizeKB * 10) / 10, wasCompressed };
     },
@@ -611,7 +627,7 @@ async function loadAllData() {
         if (savedLastCommit) {
             appState.lastCommitSha = savedLastCommit.sha;
             appState.lastCommitMessage = savedLastCommit.message;
-            $('lastPublish').textContent = `上次发布: ${savedLastCommit.time || '--'}`;
+            appState.lastCommitTime = savedLastCommit.time || '';
         }
 
         showToast('数据加载完成', 'success');
@@ -632,7 +648,7 @@ function renderDashboard() {
     const data = appState.workingSongsData;
     // 本周歌曲信息
     const ws = data.weeklySongs;
-    $('dashWeeklyInfo').textContent = `更新日期：${ws.updateDate}\n${ws.songs.length} 首歌曲`;
+    $('dashWeeklyInfo').textContent = `适用日期：${ws.updateDate}\n${ws.songs.length} 首歌曲`;
 
     // 歌曲管理信息
     let totalSongs = 0;
@@ -644,7 +660,10 @@ function renderDashboard() {
     $('dashSettingsInfo').textContent = appState.christmasTheme ? '🎄 圣诞主题已开启' : '🎵 普通主题';
 
     updatePendingUI();
-    $('dashPublishInfo').textContent = appState.lastCommitMessage ? `上次发布: ${appState.lastCommitMessage}` : '';
+    // 发布信息：一行显示时间和内容
+    if (appState.lastCommitTime && appState.lastCommitMessage) {
+        $('dashPublishInfo').textContent = `🕐 ${appState.lastCommitTime}  📝 ${appState.lastCommitMessage}`;
+    }
     switchSubView('dashboard');
 
     // 异步尝试从 GitHub API 获取最新提交（不阻塞 UI）
@@ -661,7 +680,8 @@ function renderCategoryList() {
         const count = Object.keys(cat.songs).length;
         return `<div class="cat-item" data-cat="${escapeHTML(name)}">
             <div class="cat-item-main">
-                <div class="cat-item-name">📁 ${escapeHTML(name)}</div>
+                <span class="drag-handle cat-drag-handle">≡</span>
+                <span class="cat-item-name">📁 ${escapeHTML(name)}</span>
                 <div class="cat-item-count">${count} 首歌曲</div>
             </div>
             <div class="cat-item-actions">
@@ -700,11 +720,44 @@ function renderCategoryList() {
     });
 
     switchSubView('songs');
+
+    // 分类拖拽排序
+    if (window.Sortable && container.children.length > 1) {
+        if (container._sortable) container._sortable.destroy();
+        container._sortable = new Sortable(container, {
+            animation: 150,
+            handle: '.cat-drag-handle',
+            ghostClass: 'sortable-ghost',
+            onEnd: function(evt) {
+                const keys = Object.keys(appState.workingSongsData.categories);
+                const [moved] = keys.splice(evt.oldIndex, 1);
+                keys.splice(evt.newIndex, 0, moved);
+                // 重建 categories 保持新顺序
+                const newCategories = {};
+                keys.forEach(k => { newCategories[k] = appState.workingSongsData.categories[k]; });
+                appState.workingSongsData.categories = newCategories;
+                renderCategoryList();
+                addPendingChange('modify', '调整分类排序', null, 'category:sort');
+                // 净零检测
+                const origKeys = Object.keys(appState.originalSongsData?.categories || {});
+                const curKeys = Object.keys(appState.workingSongsData.categories);
+                if (origKeys.length === curKeys.length && origKeys.every((k, i) => k === curKeys[i])) {
+                    appState.pendingChanges = appState.pendingChanges.filter(c => c._dedupKey !== 'category:sort');
+                    updatePendingUI();
+                    idb.putState('pending_changes', appState.pendingChanges).catch(() => {});
+                    showToast('分类排序与原始一致，无需发布', '');
+                }
+            }
+        });
+    }
 }
 
 function showRenameCategoryModal(oldName) {
-    // 尝试从 script.js translations 中提取现有英文翻译
-    const existingEn = extractTranslationFromScript('categories', oldName);
+    // 从 script.js 或待发布翻译中提取现有英文翻译
+    let existingEn = extractTranslationFromScript('categories', oldName);
+    if (!existingEn && appState._pendingTranslations?.categories?.[oldName]) {
+        existingEn = appState._pendingTranslations.categories[oldName];
+    }
     showModal(`
         <h3>✏️ 修改分类名称</h3>
         <label>名称（中文）</label>
@@ -789,26 +842,40 @@ function extractTranslationFromScript(section, key) {
 }
 
 function executeRenameCategory(oldName, newName, newNameEn) {
-    // 重命名分类
-    appState.workingSongsData.categories[newName] = appState.workingSongsData.categories[oldName];
-    delete appState.workingSongsData.categories[oldName];
+    // 重命名分类——保持原有顺序
+    const newCategories = {};
+    for (const [k, v] of Object.entries(appState.workingSongsData.categories)) {
+        if (k === oldName) {
+            newCategories[newName] = v;
+        } else {
+            newCategories[k] = v;
+        }
+    }
+    appState.workingSongsData.categories = newCategories;
 
-    // 更新图片文件名
+    // 更新图片文件名（包括已在 GitHub 上的文件）
     const oldPrefix = oldName + '_';
     const newPrefix = newName + '_';
     const renames = [];
     appState.imageFileCache.forEach((info, filename) => {
         if (filename.startsWith(oldPrefix)) {
             const newFilename = newPrefix + filename.slice(oldPrefix.length);
-            renames.push({ old: filename, new: newFilename, path: info.path });
+            renames.push({ old: filename, new: newFilename, path: info.path, sha: info.sha });
         }
     });
+    // 更新已有的 pendingImageOps
     appState.pendingImageOps = appState.pendingImageOps.map(op => {
         const match = renames.find(r => r.old === op.filename);
         if (match) return { ...op, filename: match.new, oldFilename: match.old };
         return op;
     });
+    // 为已在 GitHub 上的文件生成删除+新增操作
     renames.forEach(r => {
+        const alreadyInOps = appState.pendingImageOps.some(op => op.filename === r.new || op.oldFilename === r.old);
+        if (!alreadyInOps) {
+            appState.pendingImageOps.push({ type: 'delete', filename: r.old, oldPath: r.path });
+            appState.pendingImageOps.push({ type: 'add', filename: r.new, sha: r.sha });
+        }
         const info = appState.imageFileCache.get(r.old);
         if (info) {
             appState.imageFileCache.delete(r.old);
@@ -831,9 +898,31 @@ function executeRenameCategory(oldName, newName, newNameEn) {
         }
     }
 
-    addPendingChange('modify', `分类改名：${oldName} → ${newName}`, `重命名 ${renames.length} 个图片文件`);
+    // dedupKey 用两个名字的排序对，确保 A→B 和 B→A 合并
+    const names = [oldName, newName].sort();
+    const renameDedupKey = `category:rename:${names[0]}:${names[1]}`;
+
+    addPendingChange('modify', `分类改名：${oldName} → ${newName}`, `重命名 ${renames.length} 个图片文件`, renameDedupKey);
+
+    // 净零检测：若最终名称等于原始名称，清除记录和图片操作
+    if (newName !== oldName && appState.originalSongsData?.categories?.[newName]) {
+        appState.pendingChanges = appState.pendingChanges.filter(c => c._dedupKey !== renameDedupKey);
+        appState.pendingImageOps = appState.pendingImageOps.filter(
+            op => !op.filename || (!op.filename.startsWith(oldName + '_') && !op.filename.startsWith(newName + '_'))
+        );
+        updatePendingUI();
+        idb.putState('pending_changes', appState.pendingChanges).catch(() => {});
+        idb.putState('pending_image_ops', appState.pendingImageOps).catch(() => {});
+        showToast('分类名称已恢复为原始名称，无需发布', '');
+    } else if (newName === oldName) {
+        appState.pendingChanges = appState.pendingChanges.filter(c => c._dedupKey !== renameDedupKey);
+        updatePendingUI();
+        idb.putState('pending_changes', appState.pendingChanges).catch(() => {});
+        showToast('分类名称未变更', '');
+    } else {
+        showToast('分类名称已修改（待发布）', 'success');
+    }
     renderCategoryList();
-    showToast('分类名称已修改（待发布）', 'success');
 }
 
 function showDeleteCategoryModal(catName) {
@@ -863,10 +952,24 @@ function showDeleteCategoryModal(catName) {
                 appState.pendingImageOps.push({ type: 'delete', filename, oldPath: info.path });
             }
         });
-        addPendingChange('delete', `删除分类：${catName}`);
-        hideModal();
-        renderCategoryList();
-        showToast('分类已删除', 'success');
+        // 净零检测：若删除的分类是本次会话新增的（原始数据中不存在），直接取消
+        const existedInOriginal = appState.originalSongsData?.categories?.[catName];
+        if (!existedInOriginal) {
+            delete appState.workingSongsData.categories[catName];
+            appState.pendingChanges = appState.pendingChanges.filter(c => c._dedupKey !== `category:${catName}`);
+            appState.pendingImageOps = appState.pendingImageOps.filter(op => !op.filename || !op.filename.startsWith(catName + '_'));
+            updatePendingUI();
+            idb.putState('pending_changes', appState.pendingChanges).catch(() => {});
+            hideModal();
+            renderCategoryList();
+            showToast('分类未实际创建过，已直接移除', '');
+        } else {
+            delete appState.workingSongsData.categories[catName];
+            addPendingChange('delete', `删除分类：${catName}`, null, `category:${catName}`);
+            hideModal();
+            renderCategoryList();
+            showToast('分类已删除（待发布）', 'success');
+        }
     };
 }
 
@@ -946,11 +1049,12 @@ function renderSongList(catName) {
 }
 
 function buildSongItemHTML(catName, id, song) {
-    const versions = song.versions ? song.versions.join('、') : '无';
+    const versions = (song.versions && song.versions.length > 0) ? song.versions.join('、') : '';
+    const meta = versions ? `${song.pages}页 · ${versions}` : `${song.pages}页`;
     return `<div class="song-item" data-id="${escapeHTML(id)}" data-cat="${escapeHTML(catName)}">
         <div class="song-item-num">#${escapeHTML(id)}</div>
         <div class="song-item-title">${escapeHTML(song.title)}</div>
-        <div class="song-item-meta">${song.pages}页 · ${versions}</div>
+        <div class="song-item-meta">${meta}</div>
         <div class="song-item-actions">
             <button class="preview-song-btn" data-id="${escapeHTML(id)}" data-cat="${escapeHTML(catName)}" title="预览乐谱">👁️</button>
             <button class="edit-song-btn" data-id="${escapeHTML(id)}" data-cat="${escapeHTML(catName)}" title="编辑">✏️</button>
@@ -1020,8 +1124,50 @@ function previewSong(catName, songId) {
 
 // ==================== 新增/编辑歌曲界面 ====================
 function openSongEditor(catName, songId, isNew) {
+    const prevId = appState.currentEditSong?._sessionId;
+    const prevOriginal = appState.currentEditSong?._originalData;
     appState.currentEditSong = { category: catName, id: songId, isNew };
     appState.currentViewCat = catName;
+
+    if (!isNew) {
+        appState.currentEditSong._sessionId = prevId || ('song:' + Date.now() + ':' + Math.random().toString(36).slice(2, 6));
+    }
+    console.log('[DEBUG] openSongEditor', { catName, songId, isNew, sessionId: appState.currentEditSong._sessionId });
+
+    // 保存原始歌曲数据（用于净零检测和 dedupKey）
+    if (!isNew && appState.originalSongsData) {
+        let origCat = null, origId = songId;
+        const curSong = appState.workingSongsData.categories[catName]?.songs?.[songId];
+        const curTitle = (curSong && curSong.title) ? curSong.title.trim() : '';
+        // 1) 同分类+同编号+同标题
+        if (curTitle && appState.originalSongsData.categories[catName]?.songs?.[songId]?.title?.trim() === curTitle) {
+            origCat = catName;
+        }
+        // 2) 按标题搜索所有分类
+        if (!origCat && curTitle) {
+            for (const c of Object.keys(appState.originalSongsData.categories)) {
+                for (const [sid, s] of Object.entries(appState.originalSongsData.categories[c].songs)) {
+                    if (s.title && s.title.trim() === curTitle) { origCat = c; origId = sid; break; }
+                }
+                if (origCat) break;
+            }
+        }
+        // 3) 若标题也改了导致查找失败，复用首次打开时保存的原始数据
+        if (!origCat && prevOriginal) {
+            origCat = prevOriginal.category;
+            origId = prevOriginal.id;
+            console.log('[DEBUG] _originalData reused from previous session');
+        }
+        // 4) 兜底：同分类+同编号
+        if (!origCat && appState.originalSongsData.categories[catName]?.songs?.[songId]) {
+            origCat = catName;
+        }
+        appState.currentEditSong._originalData = origCat
+            ? { category: origCat, id: origId, ...(appState.originalSongsData.categories[origCat]?.songs?.[origId] || {}) }
+            : null;
+        appState.currentEditSong._originalCat = origCat || catName;
+        console.log('[DEBUG] _originalData', { origCat, origId, found: !!origCat, title: appState.currentEditSong._originalData?.title });
+    }
 
     const cat = appState.workingSongsData.categories[catName];
     const song = isNew ? null : cat.songs[songId];
@@ -1185,6 +1331,36 @@ function openSongEditor(catName, songId, isNew) {
             $('editSongTitleHint').textContent = '❌ 标题包含非法字符：\\ / : * ? " < > |';
         } else {
             $('editSongTitle').classList.remove('error');
+        }
+    });
+
+    // 分类切换时自动更新编号为目标分类最小可用编号
+    $('editSongCat').addEventListener('change', () => {
+        const newCat = $('editSongCat').value;
+        const idInput = $('editSongId');
+        const oldInfo = appState.currentEditSong;
+        // 新增歌曲 或 编辑时切换了分类 → 自动生成新编号
+        if (!oldInfo || oldInfo.isNew || oldInfo.category !== newCat) {
+            idInput.value = getMinAvailableId(newCat);
+        }
+    });
+
+    // 编号输入校验：非法时自动恢复为最小可用编号
+    $('editSongId').addEventListener('input', () => {
+        const idInput = $('editSongId');
+        if (!/^\d{3}$/.test(idInput.value)) {
+            idInput.classList.add('error');
+        } else {
+            idInput.classList.remove('error');
+        }
+    });
+    $('editSongId').addEventListener('blur', () => {
+        const idInput = $('editSongId');
+        if (!/^\d{3}$/.test(idInput.value)) {
+            const catName = $('editSongCat').value;
+            idInput.value = getMinAvailableId(catName);
+            idInput.classList.remove('error');
+            showToast('编号格式不正确，已自动生成为最小可用编号', '');
         }
     });
 
@@ -1573,8 +1749,8 @@ async function saveSong() {
 
     // 校验
     if (!catName) { showToast('请选择分类', 'error'); return; }
-    if (!songId || !/^\d+$/.test(songId)) { showToast('编号必须为纯数字', 'error'); return; }
-    const formattedId = String(parseInt(songId)).padStart(3, '0');
+    if (!songId || !/^\d{3}$/.test(songId)) { showToast('编号必须为三位数字（如 001）', 'error'); return; }
+    const formattedId = songId;
     if (!rawTitle) { showToast('请输入歌曲标题', 'error'); return; }
     if (ILLEGAL_CHARS.test(rawTitle)) { showToast('标题包含非法字符：\\ / : * ? " < > |', 'error'); return; }
 
@@ -1665,21 +1841,6 @@ async function saveSong() {
         }
     }
 
-    // 如果是跨分类移动，标记旧图片删除
-    if (!appState.currentEditSong.isNew && oldInfo.category !== catName) {
-        const oldCat = appState.workingSongsData.categories[oldInfo.category];
-        if (oldCat) {
-            const oldSong = oldCat.songs[oldInfo.id];
-            const oldBase = `${oldInfo.category}_${oldInfo.id}_${oldSong?.title || ''}`;
-            // 删除旧图片（从 IndexedDB 和 GitHub）
-            appState.imageFileCache.forEach((info, filename) => {
-                if (filename.startsWith(oldInfo.category + '_' + oldInfo.id + '_')) {
-                    appState.pendingImageOps.push({ type: 'delete', filename, oldPath: info.path });
-                }
-            });
-        }
-    }
-
     // 更新本周歌曲引用（如果分类变了）
     if (!appState.currentEditSong.isNew && oldInfo.category !== catName) {
         appState.workingSongsData.weeklySongs.songs.forEach(s => {
@@ -1697,11 +1858,96 @@ async function saveSong() {
         });
     }
 
-    const actionLabel = appState.currentEditSong.isNew ? '新增' : '编辑';
-    addPendingChange(appState.currentEditSong.isNew ? 'add' : 'modify',
-        `${actionLabel}歌曲：${catName} #${formattedId}「${finalTitle}」(${totalPages}页)`);
+    // 生成变更描述（含前后对比）
+    const origData = appState.currentEditSong._originalData;
+    const oldSongData = (!appState.currentEditSong.isNew && origData) ? origData : null;
+    let changeDesc;
+    if (appState.currentEditSong.isNew) {
+        changeDesc = `新增歌曲：${catName} #${formattedId}「${finalTitle}」(${totalPages}页)`;
+    } else {
+        const parts = [];
+        const oldCat = oldSongData?.category || oldInfo.category;
+        const oldId = oldSongData?.id || oldInfo.id;
+        const oldTitle = oldSongData?.title || '';
+        const oldPages = oldSongData?.pages || 0;
+        if (oldCat !== catName) parts.push(`分类: ${oldCat} → ${catName}`);
+        if (oldId !== formattedId) parts.push(`编号: #${oldId} → #${formattedId}`);
+        if (oldTitle !== finalTitle) parts.push(`歌名: 「${oldTitle}」 → 「${finalTitle}」`);
+        if (oldPages !== totalPages) parts.push(`页数: ${oldPages} → ${totalPages}`);
+        // 检测图片变更
+        const imgChanges = [];
+        for (const v of window._songEditVersions) {
+            const newImgs = window._songEditImages[v] || [];
+            const oldImgs = oldSongData?.versions?.includes(v) ? [] : []; // 新版本
+            if (!oldSongData?.versions?.includes(v) && v !== '原谱') {
+                imgChanges.push(`新增版本「${v}」(${newImgs.length}页)`);
+            }
+        }
+        if (oldSongData?.versions) {
+            for (const ov of oldSongData.versions) {
+                if (!window._songEditVersions.includes(ov)) {
+                    imgChanges.push(`删除版本「${ov}」`);
+                }
+            }
+        }
+        if (parts.length === 0 && imgChanges.length === 0) {
+            parts.push('无实质性变更');
+        }
+        changeDesc = `编辑歌曲：${catName} #${formattedId}「${finalTitle}」` +
+            (parts.length > 0 ? ` (${parts.join('; ')})` : '') +
+            (imgChanges.length > 0 ? ` [图片: ${imgChanges.join(', ')}]` : '');
+    }
 
-    showToast(`歌曲已${actionLabel}（待发布）`, 'success');
+    // 使用会话内稳定 ID 作为 dedupKey
+    const songDedupKey = appState.currentEditSong._sessionId
+        || `song:${catName}:${formattedId}`;
+
+    console.log('[DEBUG] saveSong dedupKey', { songDedupKey, oldSongData: oldSongData?.category, catName, formattedId });
+
+    addPendingChange(
+        appState.currentEditSong.isNew ? 'add' : 'modify',
+        changeDesc,
+        null,
+        songDedupKey
+    );
+
+    // 净零检测：如果编辑后与原数据完全一致，移除待发布记录和图片操作
+    console.log('[DEBUG] netZero check', {
+        isNew: appState.currentEditSong.isNew,
+        hasOldData: !!oldSongData,
+        origCat: oldSongData?.category,
+        origId: oldSongData?.id,
+        catName, formattedId,
+        origTitle: oldSongData?.title, finalTitle,
+        origPages: oldSongData?.pages, totalPages
+    });
+    if (!appState.currentEditSong.isNew && oldSongData) {
+        const origCat = oldSongData.category;
+        const origId = appState.currentEditSong.id;
+        const newSong = cat.songs[formattedId];
+        const isIdentical =
+            origCat === catName &&
+            origId === formattedId &&
+            oldSongData.title === finalTitle &&
+            oldSongData.pages === totalPages &&
+            JSON.stringify((oldSongData.versions || []).sort()) === JSON.stringify((newSong.versions || []).sort());
+        if (isIdentical) {
+            // 清除此歌曲的所有图片操作和待发布记录
+            const imgPrefixes = [catName, oldInfo.category].filter(Boolean).map(c => `${c}_${formattedId}_`);
+            appState.pendingImageOps = appState.pendingImageOps.filter(
+                op => !op.filename || !imgPrefixes.some(p => op.filename.startsWith(p))
+            );
+            appState.pendingChanges = appState.pendingChanges.filter(c => c._dedupKey !== songDedupKey);
+            updatePendingUI();
+            idb.putState('pending_changes', appState.pendingChanges).catch(() => {});
+            idb.putState('pending_image_ops', appState.pendingImageOps).catch(() => {});
+            showToast('未检测到实际变更，已自动清除待发布记录', '');
+            renderSongList(catName);
+            return;
+        }
+    }
+
+    showToast(`歌曲已${appState.currentEditSong.isNew ? '新增' : '保存'}（待发布）`, 'success');
     renderSongList(catName);
 }
 
@@ -1732,10 +1978,23 @@ function showDeleteSongModal(catName, songId) {
         appState.workingSongsData.weeklySongs.songs = appState.workingSongsData.weeklySongs.songs.filter(
             s => !(s.category === catName && s.id === songId)
         );
-        addPendingChange('delete', `删除歌曲：${catName} #${songId}「${song.title}」`);
-        hideModal();
-        renderSongList(catName);
-        showToast('歌曲已删除（待发布）', 'success');
+        // 净零检测：若删除的歌曲是本次会话新增的，直接取消
+        const origSong = appState.originalSongsData?.categories?.[catName]?.songs?.[songId];
+        if (!origSong) {
+            delete appState.workingSongsData.categories[catName].songs[songId];
+            appState.pendingChanges = appState.pendingChanges.filter(c => c._dedupKey !== `song:delete:${catName}:${songId}`);
+            updatePendingUI();
+            idb.putState('pending_changes', appState.pendingChanges).catch(() => {});
+            hideModal();
+            renderSongList(catName);
+            showToast('歌曲未实际创建过，已直接移除', '');
+        } else {
+            delete appState.workingSongsData.categories[catName].songs[songId];
+            addPendingChange('delete', `删除歌曲：${catName} #${songId}「${song.title}」`, null, `song:delete:${catName}:${songId}`);
+            hideModal();
+            renderSongList(catName);
+            showToast('歌曲已删除（待发布）', 'success');
+        }
     };
 }
 
@@ -1773,10 +2032,29 @@ function renumberCategory(catName) {
         appState.workingSongsData.weeklySongs.songs.forEach(s => {
             if (s.category === catName && idMap[s.id]) s.id = idMap[s.id];
         });
-        addPendingChange('modify', `重整编号：${catName}`, `重排 ${renames.length} 首歌曲编号`);
+        addPendingChange('modify', `重整编号：${catName}`, `重排 ${renames.length} 首歌曲编号`, `renumber:${catName}`);
+        // 净零检测：对比重整后是否与原始编号一致
+        const origSongs = appState.originalSongsData?.categories?.[catName]?.songs || {};
+        const curSongs2 = appState.workingSongsData.categories[catName].songs;
+        const origIds = Object.keys(origSongs).sort();
+        const curIds = Object.keys(curSongs2).sort();
+        const sameIds = origIds.length === curIds.length && origIds.every((id, i) => id === curIds[i]);
+        let sameTitles = true;
+        if (sameIds) {
+            for (const id of origIds) {
+                if (origSongs[id]?.title !== curSongs2[id]?.title) { sameTitles = false; break; }
+            }
+        }
+        if (sameIds && sameTitles) {
+            appState.pendingChanges = appState.pendingChanges.filter(c => c._dedupKey !== `renumber:${catName}`);
+            updatePendingUI();
+            idb.putState('pending_changes', appState.pendingChanges).catch(() => {});
+            showToast('编号与原始一致，无需发布', '');
+        } else {
+            showToast('编号重整完成（待发布）', 'success');
+        }
         hideModal();
         renderSongList(catName);
-        showToast('编号重整完成（待发布）', 'success');
     };
 }
 
@@ -1785,12 +2063,11 @@ function renderWeeklyEditor() {
     const ws = appState.workingSongsData.weeklySongs;
     window._weeklySnapshot = JSON.stringify(ws);
     $('weeklyContainer').innerHTML = `
-        <div style="display:flex;gap:10px;margin-bottom:16px;">
-            <button class="btn-cancel" id="weeklyCancel" style="flex:1;padding:12px;border-radius:8px;font-size:0.95rem;">取消</button>
-            <button class="btn-save" id="weeklySave" style="flex:1;padding:12px;border-radius:8px;font-size:0.95rem;" disabled>💾 保存本周歌曲</button>
+        <div style="margin-bottom:16px;">
+            <button class="btn-save" id="weeklySave" style="width:100%;padding:12px;border-radius:8px;font-size:0.95rem;" disabled>💾 保存修改</button>
         </div>
         <div class="weekly-date-row">
-            <label>📅 更新日期</label>
+            <label>📅 适用日期</label>
             <div style="flex:1;display:flex;align-items:center;">
                 <input type="text" id="weeklyDate" value="${ws.updateDate}" placeholder="2026/08/09" pattern="\\d{4}/\\d{2}/\\d{2}" style="flex:1;cursor:pointer;" title="点击选择日期" readonly>
                 <input type="date" id="weeklyDateHidden" style="position:absolute;width:0;height:0;opacity:0;pointer-events:none;" tabindex="-1">
@@ -1841,9 +2118,12 @@ function renderWeeklyEditor() {
     };
 
     $('weeklySearch').addEventListener('input', (e) => {
+        // 搜索时取消替换模式
+        delete window._replaceTargetIndex;
+        delete window._replaceTargetCat;
+        delete window._replaceTargetId;
         renderWeeklySongSelector(e.target.value.trim().toLowerCase());
     });
-    $('weeklyCancel').onclick = confirmLeaveWeekly;
     // 顶部返回按钮也拦截
     const weeklyBackBtn = document.getElementById('weeklyBackBtn');
     if (weeklyBackBtn) weeklyBackBtn.onclick = (e) => { e.preventDefault(); confirmLeaveWeekly(); };
@@ -1890,6 +2170,7 @@ function renderSelectedSongs() {
             </div>
             <div class="song-actions">
                 <button class="preview-btn" data-cat="${escapeHTML(s.category)}" data-id="${escapeHTML(s.id)}">👁️</button>
+                <button class="replace-btn" data-index="${idx}" data-cat="${escapeHTML(s.category)}" title="更换歌曲">🔄</button>
                 <button class="remove-btn" data-index="${idx}">✕</button>
             </div>
         </div>`;
@@ -1916,6 +2197,45 @@ function renderSelectedSongs() {
             if (window._checkWeeklyChanged) window._checkWeeklyChanged();
         });
     });
+    // 更换按钮：滚动到指定分类并高亮
+    list.querySelectorAll('.replace-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const idx = parseInt(btn.dataset.index);
+            const targetCat = btn.dataset.cat;
+            const targetId = appState.workingSongsData.weeklySongs.songs[idx].id;
+            // 清空搜索框
+            const searchInput = $('weeklySearch');
+            searchInput.value = '';
+            // 存储替换目标
+            window._replaceTargetIndex = idx;
+            window._replaceTargetCat = targetCat;
+            window._replaceTargetId = targetId;
+            // 重新渲染选择器
+            renderWeeklySongSelector('', targetCat, targetId);
+            // 滚动到对应分类（减去导航高度避免被遮挡）
+            setTimeout(() => {
+                const catHeaders = $('weeklySongSelector').querySelectorAll('.song-selector-cat-header');
+                for (const header of catHeaders) {
+                    if (header.textContent.includes(targetCat)) {
+                        const body = header.nextElementSibling;
+                        const arrow = header.querySelector('.arrow');
+                        if (body && !body.classList.contains('open')) {
+                            body.classList.add('open');
+                            if (arrow) arrow.classList.add('open');
+                        }
+                        const top = header.getBoundingClientRect().top + window.pageYOffset - 120;
+                        window.scrollTo({ top, behavior: 'smooth' });
+                        header.style.background = '#fef9e7';
+                        header.style.transition = 'background 0.3s';
+                        setTimeout(() => { header.style.background = ''; }, 1500);
+                        break;
+                    }
+                }
+                showToast(`请从「${targetCat}」中选择替换歌曲，点击 ＋ 即可替换`, '');
+            }, 100);
+        });
+    });
 
     // 拖拽排序（SortableJS）
     if (window.Sortable && list.children.length > 0) {
@@ -1936,7 +2256,7 @@ function renderSelectedSongs() {
     }
 }
 
-function renderWeeklySongSelector(query) {
+function renderWeeklySongSelector(query, replaceCat, replaceTargetId) {
     const container = $('weeklySongSelector');
     const data = appState.workingSongsData;
     const ws = data.weeklySongs;
@@ -1974,12 +2294,13 @@ function renderWeeklySongSelector(query) {
                     </div>
                     <div class="song-selector-cat-body">`;
                 subSongs.forEach(([id, song]) => {
-                    const isAdded = ws.songs.some(s => s.category === catName && s.id === id);
+                    const isReplaceTarget = (replaceCat === catName) && (id === replaceTargetId);
+                    const isAdded = !isReplaceTarget && (replaceCat !== catName) && ws.songs.some(s => s.category === catName && s.id === id);
                     html += `<div class="song-selector-song">
                         <span>#${escapeHTML(id)} ${escapeHTML(song.title)}</span>
                         <span style="display:flex;gap:8px;">
                             <button class="small-btn preview-btn" data-cat="${escapeHTML(catName)}" data-id="${escapeHTML(id)}">👁️</button>
-                            ${isAdded ? '<span style="color:var(--success);font-weight:700;padding:4px 8px;">✓</span>' : `<button class="add-icon add-to-weekly" data-cat="${escapeHTML(catName)}" data-id="${escapeHTML(id)}">＋</button>`}
+                            ${(isAdded || isReplaceTarget) ? '<span style="color:var(--success);font-weight:700;padding:4px 8px;">✓</span>' : `<button class="add-icon add-to-weekly" data-cat="${escapeHTML(catName)}" data-id="${escapeHTML(id)}">＋</button>`}
                         </span>
                     </div>`;
                 });
@@ -1987,12 +2308,13 @@ function renderWeeklySongSelector(query) {
             }
         } else {
             filteredSongs.forEach(([id, song]) => {
-                const isAdded = ws.songs.some(s => s.category === catName && s.id === id);
+                const isReplaceTarget = (replaceCat === catName) && (id === replaceTargetId);
+                const isAdded = !isReplaceTarget && (replaceCat !== catName) && ws.songs.some(s => s.category === catName && s.id === id);
                 html += `<div class="song-selector-song">
                     <span>#${escapeHTML(id)} ${escapeHTML(song.title)}</span>
                     <span style="display:flex;gap:8px;">
                         <button class="small-btn preview-btn" data-cat="${escapeHTML(catName)}" data-id="${escapeHTML(id)}">👁️</button>
-                        ${isAdded ? '<span style="color:var(--success);font-weight:700;padding:4px 8px;">✓</span>' : `<button class="add-icon add-to-weekly" data-cat="${escapeHTML(catName)}" data-id="${escapeHTML(id)}">＋</button>`}
+                        ${(isAdded || isReplaceTarget) ? '<span style="color:var(--success);font-weight:700;padding:4px 8px;">✓</span>' : `<button class="add-icon add-to-weekly" data-cat="${escapeHTML(catName)}" data-id="${escapeHTML(id)}">＋</button>`}
                     </span>
                 </div>`;
             });
@@ -2001,22 +2323,53 @@ function renderWeeklySongSelector(query) {
     });
     container.innerHTML = html || '<div class="empty-msg">没有匹配的歌曲</div>';
 
-    // 折叠展开
+    // 折叠展开（点击任意分类头时取消替换模式）
     container.querySelectorAll('.song-selector-cat-header').forEach(header => {
         header.addEventListener('click', () => {
+            // 如果点击的不是替换目标分类，取消替换模式
+            if (window._replaceTargetIndex !== undefined) {
+                const headerText = header.textContent || '';
+                if (!headerText.includes(window._replaceTargetCat)) {
+                    delete window._replaceTargetIndex;
+                    delete window._replaceTargetCat;
+                    delete window._replaceTargetId;
+                }
+            }
             const body = header.nextElementSibling;
             const arrow = header.querySelector('.arrow');
             body.classList.toggle('open');
             arrow.classList.toggle('open');
         });
     });
-    // 添加到本周
+    // 添加到本周（或替换）
     container.querySelectorAll('.add-to-weekly').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
             const cat = btn.dataset.cat;
             const id = btn.dataset.id;
             const ws = appState.workingSongsData.weeklySongs;
+            // 如果是替换模式
+            if (window._replaceTargetIndex !== undefined && window._replaceTargetCat === cat) {
+                const catSong = appState.workingSongsData.categories[cat];
+                const songTitle = catSong && catSong.songs[id] ? catSong.songs[id].title : '';
+                const oldSong = ws.songs[window._replaceTargetIndex];
+                if (oldSong && oldSong.id === id) {
+                    showToast('未更换：选择了同一首歌曲', '');
+                    return;
+                }
+                ws.songs[window._replaceTargetIndex] = { category: cat, id };
+                delete window._replaceTargetIndex;
+                delete window._replaceTargetCat;
+                delete window._replaceTargetId;
+                renderSelectedSongs();
+                renderWeeklySongSelector($('weeklySearch').value.trim().toLowerCase());
+                showToast(`已替换为：${cat} #${id}「${songTitle}」`, 'success');
+                if (window._checkWeeklyChanged) window._checkWeeklyChanged();
+                // 滚动回页面顶部
+                setTimeout(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }, 100);
+                return;
+            }
+            // 正常添加模式
             if (ws.songs.some(s => s.category === cat && s.id === id)) {
                 showToast('该歌曲已在列表中', '');
                 return;
@@ -2041,14 +2394,33 @@ function renderWeeklySongSelector(query) {
 
 function saveWeeklySongs() {
     const dateVal = $('weeklyDate').value.trim();
-    if (!dateVal) { showToast('请输入更新日期', 'error'); return; }
+    if (!dateVal) { showToast('请输入适用日期', 'error'); return; }
     if (!/^\d{4}\/\d{2}\/\d{2}$/.test(dateVal)) { showToast('日期格式错误，应为 yyyy/mm/dd，如 2026/08/09', 'error'); return; }
     appState.workingSongsData.weeklySongs.updateDate = dateVal;
     window._weeklySnapshot = JSON.stringify(appState.workingSongsData.weeklySongs);
     const saveBtn = $('weeklySave');
     if (saveBtn) saveBtn.disabled = true;
-    addPendingChange('weekly', `本周歌曲更新至 ${dateVal}（${appState.workingSongsData.weeklySongs.songs.length}首）`);
-    showToast('本周歌曲已保存（待发布）', 'success');
+
+    // 净零检测：与原始数据一致则自动清除
+    const origWeekly = appState.originalSongsData?.weeklySongs;
+    const curWeekly = appState.workingSongsData.weeklySongs;
+    const isIdentical = origWeekly &&
+        origWeekly.updateDate === curWeekly.updateDate &&
+        origWeekly.songs.length === curWeekly.songs.length &&
+        origWeekly.songs.every((s, i) =>
+            s.category === curWeekly.songs[i].category && s.id === curWeekly.songs[i].id
+        );
+
+    addPendingChange('weekly', `修改本周歌曲（${dateVal}，${curWeekly.songs.length}首）`, null, 'weekly');
+
+    if (isIdentical) {
+        appState.pendingChanges = appState.pendingChanges.filter(c => c._dedupKey !== 'weekly');
+        updatePendingUI();
+        idb.putState('pending_changes', appState.pendingChanges).catch(() => {});
+        showToast('本周歌曲与原始一致，无需发布', '');
+    } else {
+        showToast('本周歌曲已保存（待发布）', 'success');
+    }
 }
 
 // ==================== 网站设置 ====================
@@ -2075,8 +2447,19 @@ function renderSettings() {
 
     $('christmasToggle').addEventListener('change', () => {
         appState.christmasTheme = $('christmasToggle').checked;
-        addPendingChange('settings', appState.christmasTheme ? '开启圣诞主题' : '关闭圣诞主题');
-        showToast('设置已保存（待发布）', 'success');
+        const dedupKey = 'settings:christmas';
+        addPendingChange('settings', appState.christmasTheme ? '开启圣诞主题' : '关闭圣诞主题', null, dedupKey);
+        // 净零检测：若与原始状态一致则自动清除
+        const origTheme = appState.originalIndexHtml.includes('class="christmas-theme"') ||
+                          appState.originalIndexHtml.includes("class='christmas-theme'");
+        if (appState.christmasTheme === origTheme) {
+            appState.pendingChanges = appState.pendingChanges.filter(c => c._dedupKey !== dedupKey);
+            updatePendingUI();
+            idb.putState('pending_changes', appState.pendingChanges).catch(() => {});
+            showToast('主题与原始设置一致，无需发布', '');
+        } else {
+            showToast('设置已保存（待发布）', 'success');
+        }
     });
 
     $('rollbackBtn').addEventListener('click', showRollbackModal);
@@ -2116,7 +2499,9 @@ function showRollbackModal() {
             clearPendingChanges();
             appState.lastCommitSha = parentSha;
             appState.lastCommitMessage = '回滚操作';
-            $('lastPublish').textContent = '上次发布: 回滚操作';
+            appState.lastCommitMessage = '回滚操作';
+            appState.lastCommitSha = '';
+            appState.lastCommitTime = new Date().toLocaleString('zh-CN', { hour12: false });
             hideModal();
             showToast('回滚成功，请刷新页面重新加载数据', 'success');
             setTimeout(() => location.reload(), 1500);
@@ -2134,33 +2519,33 @@ async function doPublish() {
         return;
     }
 
-    // 构建变更预览
-    const changeDetails = appState.pendingChanges.map(c =>
-        `<div>• ${escapeHTML(c.description)}</div>`
-    ).join('');
+    const newVersion = nowTimestamp();
 
-    // 统计图片操作
+    // 自动生成 commit 信息
+    const changeLines = appState.pendingChanges.map(c => `• [${c.type}] ${c.description}`).join('\n');
     const imgAdds = appState.pendingImageOps.filter(op => op.type === 'add').length;
     const imgDels = appState.pendingImageOps.filter(op => op.type === 'delete').length;
-
-    const newVersion = nowTimestamp();
-    const commitMsgInput = `更新歌曲数据 (${newVersion})`;
+    const imgFiles = appState.pendingImageOps.map(op => {
+        const prefix = op.type === 'add' ? '[新增]' : '[删除]';
+        return `  ${prefix} img/${op.filename}`;
+    }).filter(Boolean);
+    const hasImgChanges = imgAdds > 0 || imgDels > 0;
+    const autoCommitMsg = [
+        `数据变更 (${newVersion})`,
+        changeLines || '  无',
+        hasImgChanges ? `图片: ${imgAdds}新增/${imgDels}删除` : null,
+        `涉及文件:`,
+        `  [修改] songs.json`,
+        `  [修改] script.js`,
+        `  [修改] index.html`,
+        ...imgFiles
+    ].filter(Boolean).join('\n');
 
     showModal(`
         <h3>🚀 确认发布</h3>
-        <div class="modal-detail">
-            <strong>📝 数据变更：</strong><br>
-            ${changeDetails || '无'}
-            <br><br>
-            <strong>🖼️ 图片变更：</strong><br>
-            ${imgAdds} 新增 / ${imgDels} 删除
-            <br><br>
-            <strong>🔢 版本号更新：</strong><br>
-            script.js: jsonVersion → ${newVersion}<br>
-            index.html: ?v= → ${newVersion}
-        </div>
-        <label>提交信息：</label>
-        <input class="form-input-inline" id="publishCommitMsg" value="${commitMsgInput}">
+        <div class="modal-detail" style="max-height:200px;overflow-y:auto;white-space:pre-wrap;font-size:0.8rem;background:#f8f8f8;padding:10px;border-radius:6px;margin-bottom:12px;">${escapeHTML(autoCommitMsg)}</div>
+        <label>备注（选填）</label>
+        <input class="form-input-inline" id="publishCommitMsg" value="" placeholder="附加说明会添加到 commit 信息开头">
         <p style="font-size:0.78rem;color:var(--warning);margin-top:8px;">⚠️ 发布后网站将在约 2 分钟内自动更新</p>
         <div class="modal-actions">
             <button class="btn-cancel" id="modalCancel">取消</button>
@@ -2169,7 +2554,8 @@ async function doPublish() {
     `);
     $('modalCancel').onclick = hideModal;
     $('modalConfirm').onclick = async () => {
-        const commitMsg = $('publishCommitMsg').value.trim() || commitMsgInput;
+        const note = $('publishCommitMsg').value.trim();
+        const commitMsg = note ? `${note}\n\n${autoCommitMsg}` : autoCommitMsg;
         hideModal();
         await executePublish(commitMsg, newVersion);
     };
@@ -2292,7 +2678,7 @@ async function doActualPublish(commitMsg, newVersion, latestSha) {
             message: commitMsg,
             time: new Date().toLocaleString()
         });
-        $('lastPublish').textContent = `上次发布: ${commitMsg}`;
+        appState.lastCommitTime = new Date().toLocaleString('zh-CN', { hour12: false });
 
         // 13. 更新本地原始数据
         appState.originalSongsData = JSON.parse(songsContent);
@@ -2515,7 +2901,7 @@ function showAddCategoryModal() {
         if (ILLEGAL_CHARS.test(name)) { showToast('分类名称包含非法字符', 'error'); return; }
         if (appState.workingSongsData.categories[name]) { showToast('该分类已存在', 'error'); return; }
         appState.workingSongsData.categories[name] = { songs: {} };
-        addPendingChange('add', `新增分类：${name}`);
+        addPendingChange('add', `新增分类：${name}`, null, `category:${name}`);
         hideModal();
         renderCategoryList();
         showToast('分类已新增（待发布）', 'success');
@@ -2581,7 +2967,7 @@ async function fetchLastCommitFromAPI() {
             const msg = c.commit.message.split('\n')[0];
             appState.lastCommitSha = c.sha;
             appState.lastCommitMessage = msg;
-            $('lastPublish').textContent = `上次发布: ${time}`;
+            appState.lastCommitTime = time;
             // 同步到本地缓存
             await idb.putState('last_commit', { sha: c.sha, message: msg, time }).catch(() => {});
             return true;

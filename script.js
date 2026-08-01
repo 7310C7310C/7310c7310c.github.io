@@ -31,7 +31,7 @@ const translations = {
         'backButton': '返回',
         'searchPlaceholder': '搜索歌曲……',
         'preferredVersion': '优先显示：',
-        'updateDate': '更新日期：',
+        'updateDate': '适用日期：',
         'clearSearch': '×',
         
         // 乐谱查看器
