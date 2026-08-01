@@ -1250,17 +1250,8 @@ function loadImage(page) {
     sheetImage.src = '';
     
     let imagePath;
-    // 文件名基础部分
-    let base = '';
-    if (currentState.currentSong.filename) {
-        base = currentState.currentSong.filename;
-        if (!base.startsWith(currentState.currentCategory + '_')) {
-            base = currentState.currentCategory + '_' + base;
-        }
-    } else {
-        // 动态拼接：分类名_编号_标题
-        base = `${currentState.currentCategory}_${currentState.currentSong.id}_${currentState.currentSong.title}`;
-    }
+    // 动态拼接文件名：分类名_编号_标题
+    const base = `${currentState.currentCategory}_${currentState.currentSong.id}_${currentState.currentSong.title}`;
     if (currentState.currentVersion === '原谱') {
         imagePath = `img/${currentState.currentCategory}/${base}_${page}.jpeg`;
     } else {
@@ -2153,13 +2144,8 @@ function renderRecentlyViewed() {
             if (!category) return;
             const song = category.songs[item.id];
             if (!song) return;
-            // 保证song有filename字段
-            let songWithFilename = {...song, id: item.id};
-            if (!songWithFilename.filename) {
-                songWithFilename.filename = `${item.category}_${item.id}_${item.title}`;
-            }
             currentState.openedFrom = 'history';
-            showSong(item.category, songWithFilename);
+            showSong(item.category, {...song, id: item.id});
             historyPanel.classList.remove('show');
         });
         recentlyViewedList.appendChild(songElement);
@@ -2188,13 +2174,8 @@ function renderFavorites() {
             if (!category) return;
             const song = category.songs[item.id];
             if (!song) return;
-            // 保证song有filename字段
-            let songWithFilename = {...song, id: item.id};
-            if (!songWithFilename.filename) {
-                songWithFilename.filename = `${item.category}_${item.id}_${item.title}`;
-            }
             currentState.openedFrom = 'history';
-            showSong(item.category, songWithFilename);
+            showSong(item.category, {...song, id: item.id});
             historyPanel.classList.remove('show');
         });
         const unfavoriteButton = document.createElement('button');
@@ -2296,15 +2277,7 @@ function preloadWeeklySongs() {
             const img = new Image();
             
             // 构建图片路径
-            let base = '';
-            if (song.filename) {
-                base = song.filename;
-                if (!base.startsWith(item.category + '_')) {
-                    base = item.category + '_' + base;
-                }
-            } else {
-                base = `${item.category}_${item.id}_${song.title}`;
-            }
+            const base = `${item.category}_${item.id}_${song.title}`;
             
             let imagePath;
             if (preferredVersion === '原谱') {
@@ -2517,13 +2490,7 @@ function getDoodleKey() {
     let version = currentState.currentVersion || '原谱';
     let page = currentState.currentPage || 1;
     
-    // 使用与 loadImage 相同的逻辑来创建唯一标识符，防止涂鸦错乱
-    let baseIdentifier;
-    if (currentState.currentSong.filename) {
-        baseIdentifier = currentState.currentSong.filename;
-    } else {
-        baseIdentifier = `${currentState.currentCategory}_${currentState.currentSong.id}_${currentState.currentSong.title}`;
-    }
+    const baseIdentifier = `${currentState.currentCategory}_${currentState.currentSong.id}_${currentState.currentSong.title}`;
 
     return `doodle_${baseIdentifier}_${version}_${page}`;
 }
