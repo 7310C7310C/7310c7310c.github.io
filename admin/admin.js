@@ -2119,10 +2119,11 @@ function renderWeeklyEditor() {
 
     $('weeklySearch').addEventListener('input', (e) => {
         // 搜索时取消替换模式
-        delete window._replaceTargetIndex;
-        delete window._replaceTargetCat;
-        delete window._replaceTargetId;
+        if (cancelReplaceMode()) showToast('已取消替换模式', '');
         renderWeeklySongSelector(e.target.value.trim().toLowerCase());
+    });
+    $('weeklySearch').addEventListener('focus', () => {
+        if (cancelReplaceMode()) { showToast('已取消替换模式', ''); renderWeeklySongSelector(''); }
     });
     // 顶部返回按钮也拦截
     const weeklyBackBtn = document.getElementById('weeklyBackBtn');
@@ -2134,6 +2135,7 @@ function renderWeeklyEditor() {
     const dateText = $('weeklyDate');
     if (dateHidden && dateText) {
         dateText.addEventListener('click', () => {
+            if (cancelReplaceMode()) { showToast('已取消替换模式', ''); renderWeeklySongSelector(''); }
             if (dateText.value && /^\d{4}\/\d{2}\/\d{2}$/.test(dateText.value)) {
                 dateHidden.value = dateText.value.replace(/\//g, '-');
             }
@@ -2186,6 +2188,7 @@ function renderSelectedSongs() {
     list.querySelectorAll('.preview-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
+            if (cancelReplaceMode()) { showToast('已取消替换模式', ''); renderWeeklySongSelector(''); }
             previewSong(btn.dataset.cat, btn.dataset.id);
         });
     });
@@ -2193,6 +2196,7 @@ function renderSelectedSongs() {
     list.querySelectorAll('.remove-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
+            if (cancelReplaceMode()) showToast('已取消替换模式', '');
             const idx = parseInt(btn.dataset.index);
             appState.workingSongsData.weeklySongs.songs.splice(idx, 1);
             renderSelectedSongs();
@@ -2235,7 +2239,7 @@ function renderSelectedSongs() {
                         break;
                     }
                 }
-                showToast(`请从「${targetCat}」中选择替换歌曲，点击 ＋ 即可替换`, '');
+                showToast(`请从「${targetCat}」中选择替换歌曲，点击 🔄 即可替换`, '');
             }, 100);
         });
     });
@@ -2248,6 +2252,9 @@ function renderSelectedSongs() {
             handle: '.drag-handle',
             ghostClass: 'sortable-ghost',
             dragClass: 'sortable-drag',
+            onStart: function() {
+                if (cancelReplaceMode()) { showToast('已取消替换模式', ''); renderWeeklySongSelector(''); }
+            },
             onEnd: function(evt) {
                 const songs = appState.workingSongsData.weeklySongs.songs;
                 const [moved] = songs.splice(evt.oldIndex, 1);
@@ -2257,6 +2264,16 @@ function renderSelectedSongs() {
             }
         });
     }
+}
+
+function cancelReplaceMode() {
+    if (window._replaceTargetIndex !== undefined) {
+        delete window._replaceTargetIndex;
+        delete window._replaceTargetCat;
+        delete window._replaceTargetId;
+        return true;
+    }
+    return false;
 }
 
 function renderWeeklySongSelector(query, replaceCat, replaceTargetId) {
@@ -2276,7 +2293,7 @@ function renderWeeklySongSelector(query, replaceCat, replaceTargetId) {
         if (filteredSongs.length === 0) return;
         const isDaChangYong = catName === '答唱咏（朱健仁）';
         html += `<div class="song-selector-cat">
-            <div class="song-selector-cat-header">
+            <div class="song-selector-cat-header" data-cat="${escapeHTML(catName)}">
                 <span>📁 ${escapeHTML(catName)} (${filteredSongs.length})</span>
                 <span class="arrow">▶</span>
             </div>
@@ -2291,7 +2308,7 @@ function renderWeeklySongSelector(query, replaceCat, replaceTargetId) {
             for (const [subName, subSongs] of Object.entries(groups)) {
                 if (subSongs.length === 0) continue;
                 html += `<div class="song-selector-cat" style="margin-left:12px;">
-                    <div class="song-selector-cat-header" style="font-size:0.82rem;background:#fdf8f0;">
+                    <div class="song-selector-cat-header" style="font-size:0.82rem;background:#fdf8f0;" data-cat="${escapeHTML(catName)}" data-sub="${escapeHTML(subName)}">
                         <span>📂 ${escapeHTML(subName)} (${subSongs.length})</span>
                         <span class="arrow">▶</span>
                     </div>
@@ -2303,7 +2320,7 @@ function renderWeeklySongSelector(query, replaceCat, replaceTargetId) {
                         <span>#${escapeHTML(id)} ${escapeHTML(song.title)}</span>
                         <span style="display:flex;gap:8px;">
                             <button class="small-btn preview-btn" data-cat="${escapeHTML(catName)}" data-id="${escapeHTML(id)}">👁️</button>
-                            ${(isAdded || isReplaceTarget) ? '<span style="color:var(--success);font-weight:700;padding:4px 8px;">✓</span>' : `<button class="add-icon add-to-weekly" data-cat="${escapeHTML(catName)}" data-id="${escapeHTML(id)}">＋</button>`}
+                            ${isReplaceTarget || isAdded ? '<span style="color:var(--success);font-weight:700;padding:4px 8px;">✓</span>' : (replaceCat === catName) ? `<button class="add-icon add-to-weekly replace-mode-btn" data-cat="${escapeHTML(catName)}" data-id="${escapeHTML(id)}" title="点击替换">🔄</button>` : `<button class="add-icon add-to-weekly" data-cat="${escapeHTML(catName)}" data-id="${escapeHTML(id)}">＋</button>`}
                         </span>
                     </div>`;
                 });
@@ -2317,7 +2334,7 @@ function renderWeeklySongSelector(query, replaceCat, replaceTargetId) {
                     <span>#${escapeHTML(id)} ${escapeHTML(song.title)}</span>
                     <span style="display:flex;gap:8px;">
                         <button class="small-btn preview-btn" data-cat="${escapeHTML(catName)}" data-id="${escapeHTML(id)}">👁️</button>
-                        ${(isAdded || isReplaceTarget) ? '<span style="color:var(--success);font-weight:700;padding:4px 8px;">✓</span>' : `<button class="add-icon add-to-weekly" data-cat="${escapeHTML(catName)}" data-id="${escapeHTML(id)}">＋</button>`}
+                        ${isReplaceTarget || isAdded ? '<span style="color:var(--success);font-weight:700;padding:4px 8px;">✓</span>' : (replaceCat === catName) ? `<button class="add-icon add-to-weekly replace-mode-btn" data-cat="${escapeHTML(catName)}" data-id="${escapeHTML(id)}" title="点击替换">🔄</button>` : `<button class="add-icon add-to-weekly" data-cat="${escapeHTML(catName)}" data-id="${escapeHTML(id)}">＋</button>`}
                     </span>
                 </div>`;
             });
@@ -2329,15 +2346,23 @@ function renderWeeklySongSelector(query, replaceCat, replaceTargetId) {
     // 折叠展开（点击任意分类头时取消替换模式）
     container.querySelectorAll('.song-selector-cat-header').forEach(header => {
         header.addEventListener('click', () => {
-            // 如果点击的不是替换目标分类，取消替换模式
-            if (window._replaceTargetIndex !== undefined) {
-                const headerText = header.textContent || '';
-                if (!headerText.includes(window._replaceTargetCat)) {
-                    delete window._replaceTargetIndex;
-                    delete window._replaceTargetCat;
-                    delete window._replaceTargetId;
-                }
+            // 如果处于替换模式，就地取消替换（不整页重渲染，避免跳动）
+            if (cancelReplaceMode()) {
+                const ws = appState.workingSongsData.weeklySongs;
+                // 🔄 按钮就地还原：已在列表的显示 ✓，否则显示 ＋
+                container.querySelectorAll('.replace-mode-btn').forEach(b => {
+                    const inList = ws.songs.some(s => s.category === b.dataset.cat && s.id === b.dataset.id);
+                    b.classList.remove('replace-mode-btn');
+                    if (inList) {
+                        b.outerHTML = '<span style="color:var(--success);font-weight:700;padding:4px 8px;">✓</span>';
+                    } else {
+                        b.textContent = '＋';
+                        b.removeAttribute('title');
+                    }
+                });
+                showToast('已取消替换模式', '');
             }
+            // 正常折叠展开（与普通模式一致，不会跳动）
             const body = header.nextElementSibling;
             const arrow = header.querySelector('.arrow');
             body.classList.toggle('open');

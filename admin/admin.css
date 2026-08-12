@@ -585,6 +585,8 @@ input, select, textarea {
 }
 .song-selector-song:hover { background: var(--bg-card-hover); }
 .song-selector-song .add-icon { color: var(--success); font-weight: 700; font-size: 1.1rem; }
+.song-selector-song .replace-mode-btn { color: #fff; background: var(--warning, #f0a030); font-weight: 700; font-size: 0.9rem; border-radius: 4px; padding: 2px 6px; animation: pulse-replace 1.2s ease-in-out infinite; }
+@keyframes pulse-replace { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
 
 /* ==================== 设置 ==================== */
 .settings-container { padding: 16px; flex: 1; overflow-y: auto; }
