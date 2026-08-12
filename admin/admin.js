@@ -2514,6 +2514,23 @@ function showRollbackModal() {
     $('modalConfirm').onclick = async () => {
         try {
             showToast('正在回滚...', '');
+            // 安全检查：确认要回滚的提交确实是当前分支 HEAD
+            const branchData = await github.request('GET', `/repos/${REPO_OWNER}/${REPO_NAME}/git/refs/heads/${BRANCH}`);
+            const headSha = branchData && branchData.object ? branchData.object.sha : '';
+            if (headSha && headSha !== appState.lastCommitSha) {
+                // 本地记录不是远程 HEAD，说明期间有其他提交，禁止误删
+                await idb.putState('last_commit', {
+                    sha: headSha,
+                    message: '远程最新版本',
+                    time: new Date().toLocaleString()
+                }).catch(() => {});
+                appState.lastCommitSha = headSha;
+                appState.lastCommitMessage = '远程最新版本';
+                appState.lastCommitTime = new Date().toLocaleString('zh-CN', { hour12: false });
+                hideModal();
+                showToast('检测到远程有新提交，已同步记录，请刷新后重试', 'error');
+                return;
+            }
             // 获取上一个 commit
             const commitData = await github.request('GET', `/repos/${REPO_OWNER}/${REPO_NAME}/git/commits/${appState.lastCommitSha}`);
             const parentSha = commitData.parents[0]?.sha;
@@ -2527,8 +2544,6 @@ function showRollbackModal() {
             clearPendingChanges();
             appState.lastCommitSha = parentSha;
             appState.lastCommitMessage = '回滚操作';
-            appState.lastCommitMessage = '回滚操作';
-            appState.lastCommitSha = '';
             appState.lastCommitTime = new Date().toLocaleString('zh-CN', { hour12: false });
             hideModal();
             showToast('回滚成功，请刷新页面重新加载数据', 'success');
