@@ -2073,7 +2073,7 @@ function renderWeeklyEditor() {
                 <input type="date" id="weeklyDateHidden" style="position:absolute;width:0;height:0;opacity:0;pointer-events:none;" tabindex="-1">
             </div>
         </div>
-        <div class="weekly-section-title">📋 已选歌曲（${ws.songs.length}首，拖拽排序）</div>
+        <div class="weekly-section-title" id="weeklySongCountTitle">📋 已选歌曲（${ws.songs.length}首，拖拽排序）</div>
         <div class="selected-songs" id="selectedSongsList"></div>
         <div class="weekly-section-title">➕ 添加歌曲</div>
         <input class="song-selector-search" id="weeklySearch" placeholder="🔍 搜索歌曲...">
@@ -2158,6 +2158,9 @@ function renderWeeklyEditor() {
 function renderSelectedSongs() {
     const ws = appState.workingSongsData.weeklySongs;
     const list = $('selectedSongsList');
+    // 同步标题中的歌曲数量
+    const countTitle = $('weeklySongCountTitle');
+    if (countTitle) countTitle.textContent = `📋 已选歌曲（${ws.songs.length}首，拖拽排序）`;
     list.innerHTML = ws.songs.map((s, idx) => {
         const cat = appState.workingSongsData.categories[s.category];
         const song = cat ? cat.songs[s.id] : null;
