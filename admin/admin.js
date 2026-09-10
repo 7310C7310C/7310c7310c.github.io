@@ -1245,7 +1245,8 @@ function openSongEditor(catName, songId, isNew) {
     });
     // 如果是编辑模式，尝试从 IndexedDB 或远程加载已有图片
     if (song) {
-        loadExistingImagesForEdit(catName, songId, song, existingVersions);
+        const editSongRef = appState.currentEditSong;
+        window._songImagesLoaded = loadExistingImagesForEdit(catName, songId, song, existingVersions, editSongRef);
     }
     // 更新添加版本按钮状态
     updateAddVersionButton();
@@ -1522,9 +1523,11 @@ function storeImageToVersion(versionName, base64, blob, sizeKB) {
     if (typeof updateAddVersionButton === 'function') updateAddVersionButton();
 }
 
-async function loadExistingImagesForEdit(catName, songId, song, versions) {
+async function loadExistingImagesForEdit(catName, songId, song, versions, editSongRef) {
+    const snapshotMap = {};
     for (const version of versions) {
         const images = [];
+        const snapImages = [];
         for (let page = 1; page <= song.pages; page++) {
             const base = `${catName}_${songId}_${song.title}`;
             let filename;
@@ -1533,27 +1536,42 @@ async function loadExistingImagesForEdit(catName, songId, song, versions) {
             } else {
                 filename = `${base}_${version}_${page}.jpeg`;
             }
+            // 先获取 GitHub 上已发布的原图，作为净零检测的基准
+            let remote = null;
+            try {
+                const url = github.getRawFileUrl(`img/${catName}/${filename}`);
+                const resp = await fetch(url);
+                if (resp.ok) {
+                    const blob = await resp.blob();
+                    remote = await imageProcessor.blobToBase64(blob);
+                }
+            } catch (e) { remote = null; }
+
             const cached = await idb.getImage(filename);
             if (cached) {
+                // 显示本地缓存（可能含未发布的修改）
                 images.push(cached.data);
+                // 快照以 GitHub 已发布内容为准；远程不可用时回退到缓存
+                snapImages.push(remote !== null ? remote : cached.data);
+            } else if (remote !== null) {
+                images.push(remote);
+                snapImages.push(remote);
             } else {
-                try {
-                    const url = github.getRawFileUrl(`img/${catName}/${filename}`);
-                    const resp = await fetch(url);
-                    if (resp.ok) {
-                        const blob = await resp.blob();
-                        const base64 = await imageProcessor.blobToBase64(blob);
-                        images.push(base64);
-                    } else {
-                        images.push(null);
-                    }
-                } catch (e) {
-                    images.push(null);
-                }
+                images.push(null);
+                snapImages.push(null);
             }
         }
         window._songEditImages[version] = images;
+        snapshotMap[version] = snapImages;
         renderVersionImageGrid(version);
+    }
+    // 原始快照以 GitHub 已发布图片为基准，避免 IndexedDB 中残留的未发布图片造成“伪无变更”
+    const imgSnapshot = {};
+    for (const version of versions) {
+        imgSnapshot[version] = (snapshotMap[version] || []).slice();
+    }
+    if (editSongRef) {
+        editSongRef._originalImages = imgSnapshot;
     }
     // 加载完成后更新添加版本按钮
     if (typeof updateAddVersionButton === 'function') updateAddVersionButton();
@@ -1858,6 +1876,11 @@ async function saveSong() {
         });
     }
 
+    // 等待已有图片加载完成，确保原始图片快照已生成
+    if (window._songImagesLoaded) {
+        try { await window._songImagesLoaded; } catch (e) { /* 忽略加载错误 */ }
+    }
+
     // 生成变更描述（含前后对比）
     const origData = appState.currentEditSong._originalData;
     const oldSongData = (!appState.currentEditSong.isNew && origData) ? origData : null;
@@ -1890,6 +1913,20 @@ async function saveSong() {
                 }
             }
         }
+        // 检测同版本同位置的图片替换
+        const origImgSnapDesc = appState.currentEditSong._originalImages;
+        if (origImgSnapDesc) {
+            let replacedCount = 0;
+            for (const v of Object.keys(origImgSnapDesc)) {
+                const cur = (window._songEditImages[v] || []).filter(i => i !== null && i !== undefined);
+                const orig = (origImgSnapDesc[v] || []).filter(i => i !== null && i !== undefined);
+                const n = Math.max(cur.length, orig.length);
+                for (let i = 0; i < n; i++) {
+                    if (cur[i] !== orig[i]) replacedCount++;
+                }
+            }
+            if (replacedCount > 0) imgChanges.push(`替换图片 ${replacedCount} 张`);
+        }
         if (parts.length === 0 && imgChanges.length === 0) {
             parts.push('无实质性变更');
         }
@@ -1911,6 +1948,28 @@ async function saveSong() {
         songDedupKey
     );
 
+    // 图片与原始快照对比（快照基于 GitHub 已发布原图）
+    const origImgSnap = appState.currentEditSong._originalImages;
+    let imagesIdentical = true;
+    let imgDiffCount = 0;
+    if (origImgSnap) {
+        const allVersions = new Set([...window._songEditVersions, ...Object.keys(origImgSnap)]);
+        for (const v of allVersions) {
+            const cur = (window._songEditImages[v] || []).filter(i => i !== null && i !== undefined);
+            const orig = (origImgSnap[v] || []).filter(i => i !== null && i !== undefined);
+            const n = Math.max(cur.length, orig.length);
+            let diff = Math.abs(cur.length - orig.length);
+            for (let i = 0; i < n; i++) {
+                if (cur[i] !== orig[i]) diff++;
+            }
+            if (diff > 0) imagesIdentical = false;
+            imgDiffCount += diff;
+        }
+    } else {
+        imagesIdentical = false;
+        if (oldSongData) console.warn('[DEBUG] 原始图片快照缺失，按有变更处理');
+    }
+
     // 净零检测：如果编辑后与原数据完全一致，移除待发布记录和图片操作
     console.log('[DEBUG] netZero check', {
         isNew: appState.currentEditSong.isNew,
@@ -1919,7 +1978,10 @@ async function saveSong() {
         origId: oldSongData?.id,
         catName, formattedId,
         origTitle: oldSongData?.title, finalTitle,
-        origPages: oldSongData?.pages, totalPages
+        origPages: oldSongData?.pages, totalPages,
+        hasImgSnap: !!origImgSnap,
+        imagesIdentical,
+        imgDiffCount
     });
     if (!appState.currentEditSong.isNew && oldSongData) {
         const origCat = oldSongData.category;
@@ -1930,7 +1992,8 @@ async function saveSong() {
             origId === formattedId &&
             oldSongData.title === finalTitle &&
             oldSongData.pages === totalPages &&
-            JSON.stringify((oldSongData.versions || []).sort()) === JSON.stringify((newSong.versions || []).sort());
+            JSON.stringify((oldSongData.versions || []).sort()) === JSON.stringify((newSong.versions || []).sort()) &&
+            imagesIdentical;
         if (isIdentical) {
             // 清除此歌曲的所有图片操作和待发布记录
             const imgPrefixes = [catName, oldInfo.category].filter(Boolean).map(c => `${c}_${formattedId}_`);
